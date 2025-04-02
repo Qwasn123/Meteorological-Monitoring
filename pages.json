@@ -1,0 +1,21 @@
+{
+	"pages": [{
+		"path": "pages/login/login",
+		"style": {
+			"navigationBarTitleText": "登录"
+		}
+	},{
+
+		"path": "pages/index/index",
+		"style": {
+			"navigationBarTitleText": "移动微型环境监测气象站"
+		}
+	}
+],
+	"globalStyle": {
+		"navigationBarTextStyle": "white",
+		"navigationBarTitleText": "uni-app",
+		"navigationBarBackgroundColor": "#007AFF",
+		"backgroundColor": "#FFFFFF"
+	}
+}
