@@ -41,8 +41,8 @@
           <text class="forgot-text" @click="forgotPassword">忘记密码?</text>
         </view>
 
-        <view class="auth-button" @click="handleLogin">
-          <text class="auth-button-text">登录</text>
+        <view class="auth-button" @click="handleLogin" :class="{disabled: isLoading}">
+          <text class="auth-button-text">{{ isLoading ? '处理中...' : '登录'}}</text>
         </view>
 
         <view class="switch-form">
@@ -126,8 +126,8 @@
           errors.agreeTerms
         }}</text>
 
-        <view class="auth-button" @click="handleRegister">
-          <text class="auth-button-text">注册</text>
+        <view class="auth-button" @click="handleRegister" :class="{disabled: isLoading}">
+          <text class="auth-button-text">{{ isLoading ? '处理中...' : '注册' }}</text>
         </view>
 
         <view class="switch-form">
@@ -140,9 +140,12 @@
 </template>
 
 <script>
+import { http } from '@/common/api/http.js'
+  
 export default {
   data() {
     return {
+      isLoading: false,
       isLogin: true,
       showLoginPassword: false,
       showRegisterPassword: false,
@@ -172,6 +175,110 @@ export default {
   },
 
   methods: {
+    async handleLogin() {
+      // 防止重复提交
+      if (this.isLoading) return
+
+      // 保留原有的基础验证
+      if (!this.loginForm.username) {
+        uni.showToast({ title: "请输入用户名或邮箱", icon: "none" })
+        return
+      }
+      if (!this.loginForm.password) {
+        uni.showToast({ title: "请输入密码", icon: "none" })
+        return
+      }
+
+      try {
+        this.isLoading = true
+        // ▼▼▼ 调用API接口 ▼▼▼
+        const response = await http.post('/auth/login', {
+          // 根据实际接口要求调整字段名
+          username: this.loginForm.username,
+          password: this.loginForm.password
+        })
+
+        // ▼▼▼ 登录成功处理 ▼▼▼
+        uni.showToast({ title: "登录成功", icon: "success" })
+        
+        // 存储token（根据接口返回字段调整）
+        if (response.token) {
+          uni.setStorageSync('authToken', response.token)
+        }
+        
+        // 跳转到主页（实际路由需要确认）
+        setTimeout(() => {
+          uni.switchTab({  // 如果是tabbar页面用switchTab
+            url: '/pages/index/index'
+          })
+        }, 1500)
+
+      } catch (error) {
+        // ▼▼▼ 错误处理 ▼▼▼
+        console.error('登录失败:', error)
+        
+        // 显示后端返回的错误信息（根据接口返回结构调整）
+        const errorMsg = error.message || '登录失败，请检查账户信息'
+        uni.showToast({
+          title: errorMsg,
+          icon: 'none',
+          duration: 2000
+        })
+
+        // 特定错误处理示例（需根据实际错误码调整）
+        if (error.code === 401) {
+          this.errors.password = '用户名或密码错误'
+        }
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    // ▼▼▼ 修改后的注册方法 ▼▼▼
+    async handleRegister() {
+      if (!this.validateRegisterForm()) return
+      if (this.isLoading) return
+
+      try {
+        this.isLoading = true
+        // ▼▼▼ 调用注册接口 ▼▼▼
+        const response = await http.post('/auth/register', {
+          username: this.registerForm.username,
+          password: this.registerForm.password,
+          email: this.registerForm.email,    // 需要确保有email字段
+          confirmPassword: this.registerForm.confirmPassword
+        })
+
+        // ▼▼▼ 注册成功处理 ▼▼▼
+        uni.showToast({ title: "注册成功", icon: "success" })
+        
+        // 切换到登录表单
+        setTimeout(() => {
+          this.isLogin = true
+          this.clearErrors()
+        }, 1500)
+
+      } catch (error) {
+        console.error('注册失败:', error)
+        
+        // 处理用户名已存在等错误（需根据错误码调整）
+        if (error.code === 409) {
+          this.errors.username = '用户名已被注册'
+          uni.showToast({
+            title: '该用户名已被使用',
+            icon: 'none'
+          })
+        } else {
+          uni.showToast({
+            title: error.message || '注册失败，请稍后重试',
+            icon: 'none'
+          })
+        }
+      } finally {
+        this.isLoading = false
+      }
+    },
+    
     toggleForm() {
       this.isLogin = !this.isLogin;
       this.clearErrors();
@@ -314,6 +421,11 @@ export default {
 </script>
 
 <style>
+.disabled{
+  opacity: 0.7;
+  pointer-events: none;
+}
+  
 .container {
   min-height: 100vh;
   padding: 20px;
