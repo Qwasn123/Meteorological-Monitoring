@@ -14,7 +14,7 @@
           <input
             class="input-field"
             type="text"
-            v-model="loginForm.username"
+            v-model="loginForm.uname"
             placeholder="请输入用户名"
           />
         </view>
@@ -58,11 +58,11 @@
           <input
             class="input-field"
             type="text"
-            v-model="registerForm.username"
+            v-model="registerForm.uname"
             placeholder="请输入用户名"
           />
-          <text v-if="errors.username" class="error-text">{{
-            errors.username
+          <text v-if="errors.uname" class="error-text">{{
+            errors.uname
           }}</text>
         </view>
 
@@ -152,12 +152,12 @@ export default {
       showConfirmPassword: false,
 
       loginForm: {
-        username: "",
+        uname: "",
         password: "",
       },
 
       registerForm: {
-        username: "",
+        uname: "",
         email: "",
         password: "",
         confirmPassword: "",
@@ -165,7 +165,7 @@ export default {
       },
 
       errors: {
-        username: "",
+        uname: "",
         email: "",
         password: "",
         confirmPassword: "",
@@ -180,8 +180,8 @@ export default {
       if (this.isLoading) return
 
       // 保留原有的基础验证
-      if (!this.loginForm.username) {
-        uni.showToast({ title: "请输入用户名或邮箱", icon: "none" })
+      if (!this.loginForm.uname) {
+        uni.showToast({ title: "请输入用户名", icon: "none" })
         return
       }
       if (!this.loginForm.password) {
@@ -191,89 +191,72 @@ export default {
 
       try {
         this.isLoading = true
-        // ▼▼▼ 调用API接口 ▼▼▼
-        const response = await http.post('/auth/login', {
-          // 根据实际接口要求调整字段名
-          username: this.loginForm.username,
-          password: this.loginForm.password
-        })
+        // 根据http.js中定义修改参数名，这里假设修改后参数名一致，代码不变
+const response = await http.login(this.loginForm.uname, this.loginForm.password);
+//调试
+console.log('登录响应详情:', JSON.stringify(response, null, 2));
+uni.showModal({ 
+  title: '调试信息',
+  content: JSON.stringify(response.data, null, 2),
+  showCancel: false 
+});
 
-        // ▼▼▼ 登录成功处理 ▼▼▼
-        uni.showToast({ title: "登录成功", icon: "success" })
-        
-        // 存储token（根据接口返回字段调整）
-        if (response.token) {
-          uni.setStorageSync('authToken', response.token)
+        if (response.data && [201, 202, 203].includes(response.data.code)) {
+          uni.showToast({ title: '登录成功', icon: 'success' });
+          // 清除历史记录避免回退
+          uni.reLaunch({ url: '/pages/index/index' });
+        } else if (response.data?.code === 401) {
+          uni.showToast({ title: '账号或密码错误', icon: 'none' });
         }
-        
-        // 跳转到主页（实际路由需要确认）
-        setTimeout(() => {
-          uni.switchTab({  // 如果是tabbar页面用switchTab
-            url: '/pages/index/index'
-          })
-        }, 1500)
-
       } catch (error) {
-        // ▼▼▼ 错误处理 ▼▼▼
-        console.error('登录失败:', error)
-        
-        // 显示后端返回的错误信息（根据接口返回结构调整）
-        const errorMsg = error.message || '登录失败，请检查账户信息'
-        uni.showToast({
-          title: errorMsg,
-          icon: 'none',
-          duration: 2000
-        })
-
-        // 特定错误处理示例（需根据实际错误码调整）
-        if (error.code === 401) {
-          this.errors.password = '用户名或密码错误'
-        }
+        uni.showToast({ title: '登录失败，请稍后重试', icon: 'none' });
       } finally {
         this.isLoading = false
       }
     },
 
-    // ▼▼▼ 修改后的注册方法 ▼▼▼
     async handleRegister() {
-      if (!this.validateRegisterForm()) return
+      // 防止重复提交
       if (this.isLoading) return
+
+      // 保留原有的基础验证
+      if (!this.registerForm.uname) {
+        uni.showToast({ title: "请输入用户名", icon: "none" })
+        return
+      }
+      if (!this.registerForm.password) {
+        uni.showToast({ title: "请输入密码", icon: "none" })
+        return
+      }
+      if (this.registerForm.password !== this.registerForm.confirmPassword) {
+        uni.showToast({ title: "两次输入的密码不一致", icon: "none" })
+        return
+      }
+      if (!this.registerForm.agreeTerms) {
+        uni.showToast({ title: "请同意服务条款和隐私政策", icon: "none" })
+        return
+      }
 
       try {
         this.isLoading = true
-        // ▼▼▼ 调用注册接口 ▼▼▼
-        const response = await http.post('/auth/register', {
-          username: this.registerForm.username,
+        const response = await http.register({
+          uname: this.registerForm.uname,
           password: this.registerForm.password,
-          email: this.registerForm.email,    // 需要确保有email字段
-          confirmPassword: this.registerForm.confirmPassword
-        })
-
-        // ▼▼▼ 注册成功处理 ▼▼▼
-        uni.showToast({ title: "注册成功", icon: "success" })
-        
-        // 切换到登录表单
-        setTimeout(() => {
-          this.isLogin = true
-          this.clearErrors()
-        }, 1500)
-
-      } catch (error) {
-        console.error('注册失败:', error)
-        
-        // 处理用户名已存在等错误（需根据错误码调整）
-        if (error.code === 409) {
-          this.errors.username = '用户名已被注册'
-          uni.showToast({
-            title: '该用户名已被使用',
-            icon: 'none'
-          })
-        } else {
-          uni.showToast({
-            title: error.message || '注册失败，请稍后重试',
-            icon: 'none'
-          })
+          email: this.registerForm.email
+        });
+        if ([201, 202, 203].includes(response.code)) {
+          uni.showToast({ title: '注册成功', icon: 'success' });
+          // 注册成功后的操作，如跳转到登录页
+          uni.navigateTo({ url: '/pages/login/login' });
+        } else if (response.code === 402) {
+          uni.showToast({ title: '用户名已存在', icon: 'none' });
+        } else if (response.code === 400) {
+          uni.showToast({ title: '请求参数错误', icon: 'none' });
+        } else if (response.code === 500) {
+          uni.showToast({ title: '服务器内部错误', icon: 'none' });
         }
+      } catch (error) {
+        uni.showToast({ title: '注册失败，请稍后重试', icon: 'none' });
       } finally {
         this.isLoading = false
       }
@@ -286,7 +269,7 @@ export default {
 
     clearErrors() {
       this.errors = {
-        username: "",
+        uname: "",
         email: "",
         password: "",
         confirmPassword: "",
@@ -305,10 +288,10 @@ export default {
       this.clearErrors();
 
       if (
-        !this.registerForm.username ||
-        this.registerForm.username.length < 3
+        !this.registerForm.uname ||
+        this.registerForm.uname.length < 3
       ) {
-        this.errors.username = "用户名至少需要3个字符";
+        this.errors.uname = "用户名至少需要3个字符";
         isValid = false;
       }
 
@@ -341,40 +324,7 @@ export default {
       return isValid;
     },
 
-    handleLogin() {
-      // 简单验证
-      if (!this.loginForm.username) {
-        uni.showToast({
-          title: "请输入用户名或邮箱",
-          icon: "none",
-        });
-        return;
-      }
 
-      if (!this.loginForm.password) {
-        uni.showToast({
-          title: "请输入密码",
-          icon: "none",
-        });
-        return;
-      }
-
-      // 这里添加登录逻辑
-      console.log("登录信息:", this.loginForm);
-
-      // 模拟登录成功
-      uni.showToast({
-        title: "登录成功",
-        icon: "success",
-      });
-
-      // 登录成功后可以跳转到主页
-      setTimeout(() => {
-        uni.navigateTo({
-          url: "/pages/index/index",
-        });
-      }, 1500);
-    },
 
     handleRegister() {
       if (this.validateRegisterForm()) {
