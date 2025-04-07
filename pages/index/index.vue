@@ -270,26 +270,82 @@
         </view>
 
         <!-- AI Tab -->
+
         <view v-if="activeTab === 'ai'" class="tab-content">
-          <view class="ai-card">
-            <view class="ai-header">
-              <text class="icon-text ai-icon">🤖</text>
-              <text class="ai-title">气象小笨蛋</text>
+          <!-- 1 -->
+          <!-- <view class="ai-header">
+            <text class="icon-text ai-icon">🤖</text>
+            <text class="ai-title">气象小笨蛋</text>
+          </view>
+          <view class="typing-container">
+            <view class="typing-effect">
+              你好，我是气象小笨蛋，问我些气象问题吧！
             </view>
-            <view class="typing-container">
-              <view class="typing-effect">
-                你好，我是气象小笨蛋，问我些气象问题吧！
-              </view>
-            </view>
-            <view class="ai-responses">
-              <text class="ai-text">
-                你好！我是气象小笨蛋，我可以回答一些气象相关的问题。
-              </text>
-            </view>
-            <view class="ai-questions">
-              <input type="text" placeholder="请输入你的问题" />
-              <button>发送</button>
-            </view>
+          </view>
+          <view class="ai-responses">
+            <text class="ai-text">
+              你好！我是气象小笨蛋，我可以回答一些气象相关的问题。
+            </text>
+          </view>
+          <view class="ai-questions">
+            <input type="text" placeholder="请输入你的问题" />
+            <button @click="handleChat">发送</button>
+          </view> -->
+
+          <!-- 2 -->
+          <!-- <view class="mobile-frame">
+              <iframe
+                src="http://154.39.79.242:8080/ui/chat/bb5f952bff8a54e1"
+                style="width: 100%; height: 100%"
+                frameborder="0"
+                allow="microphone"
+              >
+              </iframe>
+            </view> -->
+
+          <!-- 3 -->
+          <view class="ai-header">
+            <text class="icon-text ai-icon">🤖</text>
+            <text class="ai-title">气象小笨蛋</text>
+            <text v-if="isStreaming" class="stream-status">接收中...</text>
+          </view>
+
+          <!-- 错误提示 -->
+          <view v-if="errorMessage" class="error-message">
+            {{ errorMessage }}
+          </view>
+
+          <!-- 动态响应区域 -->
+          <scroll-view
+            class="ai-responses"
+            scroll-y
+            :scroll-into-view="'lastMsg'"
+            scroll-with-animation
+          >
+            <text class="ai-text">
+              {{ reaContent }}
+              <text v-if="isStreaming" class="typing-cursor">|</text>
+            </text>
+            <text class="ai-text">
+              {{ replyContent }}
+            </text>
+            <view id="lastMsg"></view>
+          </scroll-view>
+
+          <!-- 输入区域 -->
+          <view class="ai-questions">
+            <input
+              type="text"
+              placeholder="请输入你的问题"
+              :disabled="isStreaming"
+            />
+            <button
+              @click="handleChat"
+              :disabled="isStreaming"
+              :class="{ loading: isStreaming }"
+            >
+              {{ isStreaming ? "传输中..." : "发送" }}
+            </button>
           </view>
         </view>
       </view>
@@ -328,6 +384,13 @@ export default {
 
       // Alarm sound effect modes
       alarmModes: ["Off", "On"],
+
+      // AI chat history
+      chatHistory: [],
+      replyContent: "", // 存储AI回复内容
+      reaContent: "", // 存储AI思考内容
+      isStreaming: false, // 流式传输状态
+      errorMessage: "", // 错误信息
     };
   },
   computed: {
@@ -353,11 +416,142 @@ export default {
     onFanSliderChange(e) {
       this.fanSpeed = e.detail.value;
     },
+    // 修改后的handleChat方法
+    async handleChat() {
+      try {
+        this.isStreaming = true;
+        this.replyContent = "";
+        this.reaContent = "";
+
+        const response = await fetch(
+          "http://154.39.79.242:8080/api/application/chat_message/681232a0-1367-11f0-92ee-0242ac110002",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              AUTHORIZATION: "application-4eda6827510e8707027d68489902b172",
+              Accept: "application/json",
+            },
+            body: JSON.stringify({
+              message: "你好，重庆今天天气怎么样",
+              stream: true,
+            }),
+          }
+        );
+
+        if (!response.ok)
+          throw new Error(`HTTP error! status: ${response.status}`);
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunks = decoder
+            .decode(value)
+            .split("\n\n")
+            .filter((chunk) => chunk.startsWith("data: "));
+
+          chunks.forEach((chunk) => {
+            try {
+              const jsonStr = chunk.replace("data: ", "");
+              const data = JSON.parse(jsonStr);
+
+              if (data.reasoning_content) {
+                this.reaContent += this.unicodeToChs(data.reasoning_content);
+              }
+
+              if (data.content) {
+                this.replyContent += this.unicodeToChs(data.content);
+              }
+            } catch (e) {
+              console.warn("数据解析异常:", e);
+            }
+          });
+        }
+      } catch (error) {
+        this.errorMessage = `请求失败: ${error.message}`;
+      } finally {
+        this.isStreaming = false;
+      }
+    },
+
+    // Unicode转中文工具方法
+    unicodeToChs(str) {
+      return str.replace(/\\u([\d\w]{4})/gi, function (match, grp) {
+        return String.fromCharCode(parseInt(grp, 16));
+      });
+    },
   },
 };
 </script>
 
 <style>
+/* 新增样式 */
+.stream-status {
+  font-size: 12px;
+  color: #3b82f6;
+  margin-left: 10px;
+  animation: pulse 1s infinite;
+}
+
+.error-message {
+  color: #ef4444;
+  padding: 8px;
+  border: 1px solid #fecaca;
+  border-radius: 4px;
+  margin: 10px 0;
+  background: #fef2f2;
+}
+
+.typing-cursor {
+  color: #3b82f6;
+  animation: blink 1s step-end infinite;
+}
+
+.loading {
+  background: #94a3b8 !important;
+  cursor: not-allowed;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.mobile-frame {
+  position: relative;
+  width: 100%;
+  padding-top: 177.78%; /* 9:16比例 (9/16=56.25%) */
+  max-width: 375px; /* 移动端标准宽度 */
+  margin: 0 auto; /* 水平居中 */
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1); /* 模拟手机边框 */
+  border-radius: 20px;
+}
+
+.mobile-frame iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform-origin: top left;
+  transform: scale(1); /* 可调整缩放比例 */
+}
 /* Try Anime Styles */
 .typing-container {
   font-family: "Courier New", monospace;
@@ -550,15 +744,17 @@ export default {
 }
 
 .ai-responses {
-  height: 10rem;
-  margin: 2rem 0.5rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 1.5rem;
-  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  font-size: 16px;
+  width: 90%;
+  height: 200px;
+  padding: 15px;
+  background: #f8fafc;
+  border-radius: 8px;
   line-height: 1.6;
+  white-space: pre-wrap; /* 保留换行 */
+}
+
+.ai-text {
+  font-size: 14px;
   color: #334155;
 }
 
