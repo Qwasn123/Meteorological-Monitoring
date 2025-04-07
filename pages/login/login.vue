@@ -41,8 +41,14 @@
           <text class="forgot-text" @click="forgotPassword">忘记密码?</text>
         </view>
 
-        <view class="auth-button" @click="handleLogin" :class="{disabled: isLoading}">
-          <text class="auth-button-text">{{ isLoading ? '处理中...' : '登录'}}</text>
+        <view
+          class="auth-button"
+          @click="handleLogin"
+          :class="{ disabled: isLoading }"
+        >
+          <text class="auth-button-text">{{
+            isLoading ? "处理中..." : "登录"
+          }}</text>
         </view>
 
         <view class="switch-form">
@@ -61,11 +67,8 @@
             v-model="registerForm.uname"
             placeholder="请输入用户名"
           />
-          <text v-if="errors.uname" class="error-text">{{
-            errors.uname
-          }}</text>
+          <text v-if="errors.uname" class="error-text">{{ errors.uname }}</text>
         </view>
-
 
         <view class="input-group">
           <text class="input-label">密码</text>
@@ -126,8 +129,14 @@
           errors.agreeTerms
         }}</text>
 
-        <view class="auth-button" @click="handleRegister" :class="{disabled: isLoading}">
-          <text class="auth-button-text">{{ isLoading ? '处理中...' : '注册' }}</text>
+        <view
+          class="auth-button"
+          @click="handleRegister"
+          :class="{ disabled: isLoading }"
+        >
+          <text class="auth-button-text">{{
+            isLoading ? "处理中..." : "注册"
+          }}</text>
         </view>
 
         <view class="switch-form">
@@ -140,8 +149,6 @@
 </template>
 
 <script>
-import { http } from '@/common/api/http.js'
-  
 export default {
   data() {
     return {
@@ -150,7 +157,7 @@ export default {
       showLoginPassword: false,
       showRegisterPassword: false,
       showConfirmPassword: false,
-
+      baseUrl:"http://154.21.200.171:8081/",
       loginForm: {
         uname: "",
         password: "",
@@ -177,91 +184,82 @@ export default {
   methods: {
     async handleLogin() {
       // 防止重复提交
-      if (this.isLoading) return
+      if (this.isLoading) return;
 
       // 保留原有的基础验证
       if (!this.loginForm.uname) {
-        uni.showToast({ title: "请输入用户名", icon: "none" })
-        return
+        uni.showToast({ title: "请输入用户名", icon: "none" });
+        return;
       }
       if (!this.loginForm.password) {
-        uni.showToast({ title: "请输入密码", icon: "none" })
-        return
+        uni.showToast({ title: "请输入密码", icon: "none" });
+        return;
       }
-
-      try {
-        this.isLoading = true
-        // 根据http.js中定义修改参数名，这里假设修改后参数名一致，代码不变
-const response = await http.login(this.loginForm.uname, this.loginForm.password);
-//调试
-console.log('登录响应详情:', JSON.stringify(response, null, 2));
-uni.showModal({ 
-  title: '调试信息',
-  content: JSON.stringify(response.data, null, 2),
-  showCancel: false 
-});
-
-        if (response.data && [201, 202, 203].includes(response.data.code)) {
-          uni.showToast({ title: '登录成功', icon: 'success' });
-          // 清除历史记录避免回退
-          uni.reLaunch({ url: '/pages/index/index' });
-        } else if (response.data?.code === 401) {
-          uni.showToast({ title: '账号或密码错误', icon: 'none' });
+      let Url = this.baseUrl + "user/login" + "?uname=" + this.loginForm.uname + "&password=" + this.loginForm.password;
+      const response = await fetch(
+          Url,
+          {
+            method: "POST",
+          }
+        );
+        const data = await response.json(); // 解析响应数据
+        console.log(data);
+        if (data.code == 203) {
+          uni.navigateTo({ url: "/pages/index/index" }); // 跳转到首页
         }
-      } catch (error) {
-        uni.showToast({ title: '登录失败，请稍后重试', icon: 'none' });
-      } finally {
-        this.isLoading = false
-      }
+        else {
+          // 登录失败，显示错误信息
+          uni.showToast({ title: data.msg, icon: "none" }); // 假设服务器返回的错误信息字段名为"message" 
+        }
     },
 
     async handleRegister() {
       // 防止重复提交
-      if (this.isLoading) return
+      if (this.isLoading) return;
 
       // 保留原有的基础验证
       if (!this.registerForm.uname) {
-        uni.showToast({ title: "请输入用户名", icon: "none" })
-        return
+        uni.showToast({ title: "请输入用户名", icon: "none" });
+        return;
       }
       if (!this.registerForm.password) {
-        uni.showToast({ title: "请输入密码", icon: "none" })
-        return
+        uni.showToast({ title: "请输入密码", icon: "none" });
+        return;
       }
       if (this.registerForm.password !== this.registerForm.confirmPassword) {
-        uni.showToast({ title: "两次输入的密码不一致", icon: "none" })
-        return
+        uni.showToast({ title: "两次输入的密码不一致", icon: "none" });
+        return;
       }
       if (!this.registerForm.agreeTerms) {
-        uni.showToast({ title: "请同意服务条款和隐私政策", icon: "none" })
-        return
+        uni.showToast({ title: "请同意服务条款和隐私政策", icon: "none" });
+        return;
       }
 
       try {
-        this.isLoading = true
+        this.isLoading = true;
         const response = await http.register({
           uname: this.registerForm.uname,
           password: this.registerForm.password,
-          email: this.registerForm.email
+          email: this.registerForm.email,
         });
         if ([201, 202, 203].includes(response.code)) {
-          uni.showToast({ title: '注册成功', icon: 'success' });
+          uni.showToast({ title: "注册成功", icon: "success" });
           // 注册成功后的操作，如跳转到登录页
-          uni.navigateTo({ url: '/pages/login/login' });
+          uni.navigateTo({ url: "/pages/login/login" });
         } else if (response.code === 402) {
-          uni.showToast({ title: '用户名已存在', icon: 'none' });
+          uni.showToast({ title: "用户名已存在", icon: "none" });
         } else if (response.code === 400) {
-          uni.showToast({ title: '请求参数错误', icon: 'none' });
+          uni.showToast({ title: "请求参数错误", icon: "none" });
         } else if (response.code === 500) {
-          uni.showToast({ title: '服务器内部错误', icon: 'none' });
+          uni.showToast({ title: "服务器内部错误", icon: "none" });
         }
       } catch (error) {
-        uni.showToast({ title: '注册失败，请稍后重试', icon: 'none' });
+        uni.showToast({ title: "注册失败，请稍后重试", icon: "none" });
       } finally {
-        this.isLoading = false
+        this.isLoading = false;
       }
     },
-    
+
     toggleForm() {
       this.isLogin = !this.isLogin;
       this.clearErrors();
@@ -287,10 +285,7 @@ uni.showModal({
       let isValid = true;
       this.clearErrors();
 
-      if (
-        !this.registerForm.uname ||
-        this.registerForm.uname.length < 3
-      ) {
+      if (!this.registerForm.uname || this.registerForm.uname.length < 3) {
         this.errors.uname = "用户名至少需要3个字符";
         isValid = false;
       }
@@ -325,25 +320,6 @@ uni.showModal({
     },
 
 
-
-    handleRegister() {
-      if (this.validateRegisterForm()) {
-        // 这里添加注册逻辑
-        console.log("注册信息:", this.registerForm);
-
-        // 模拟注册成功
-        uni.showToast({
-          title: "注册成功",
-          icon: "success",
-        });
-
-        // 注册成功后切换到登录页面
-        setTimeout(() => {
-          this.isLogin = true;
-        }, 1500);
-      }
-    },
-
     forgotPassword() {
       uni.showToast({
         title: "密码重置功能即将上线",
@@ -371,11 +347,11 @@ uni.showModal({
 </script>
 
 <style>
-.disabled{
+.disabled {
   opacity: 0.7;
   pointer-events: none;
 }
-  
+
 .container {
   min-height: 100vh;
   padding: 20px;
