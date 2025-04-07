@@ -281,8 +281,14 @@
                 你好，我是气象小笨蛋，问我些气象问题吧！
               </view>
             </view>
+            <view class="ai-responses">
+              <text class="ai-text">
+                你好！我是气象小笨蛋，我可以回答一些气象相关的问题。
+              </text>
+            </view>
             <view class="ai-questions">
-              
+              <input type="text" placeholder="请输入你的问题" />
+              <button>发送</button>
             </view>
           </view>
         </view>
@@ -356,6 +362,7 @@ export default {
 .typing-container {
   font-family: "Courier New", monospace;
   margin: 2rem auto;
+  margin-bottom: 1rem;
   position: relative;
   width: fit-content;
   max-width: 100%;
@@ -369,14 +376,17 @@ export default {
   white-space: nowrap;
   overflow: hidden;
   border-right: 2px solid #3b82f6;
-  animation: 
-    typing 3s steps(30, end) forwards,  /* 调整steps值与动画填充模式 */
-    blink-caret 0.8s step-end infinite;
+  animation: typing 3s steps(30, end) forwards,
+    /* 调整steps值与动画填充模式 */ blink-caret 0.8s step-end infinite;
 }
 
 @keyframes typing {
-  from { width: 0 }
-  to { width: 100% }  /* 保持最终状态可见 */
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  } /* 保持最终状态可见 */
 }
 
 @keyframes blink-caret {
@@ -393,8 +403,7 @@ export default {
 @media (max-width: 480px) {
   .typing-effect {
     font-size: 14px;
-    animation: 
-      typing 2.5s steps(25, end) forwards,
+    animation: typing 2.5s steps(25, end) forwards,
       blink-caret 0.8s step-end infinite;
   }
 }
@@ -481,8 +490,6 @@ export default {
 
 /* Tab Styles */
 .ai-card {
-  overflow: visible; /* 允许内容溢出 */
-  min-width: 320px; /* 设置最小宽度 */
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   padding: 20px;
@@ -495,6 +502,64 @@ export default {
   font-weight: 600;
   color: #334155;
   font-size: 16px;
+}
+
+.ai-questions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.ai-questions input {
+  padding: 10px; /* 增加内边距 */
+  border-bottom: 1px dashed #95a5a6;
+  width: 70%;
+  border-image: linear-gradient(to right, #3498db, #e74c3c);
+  border-image-slice: 1;
+  border-width: 0 0 2px 0;
+  transition: all 0.3s;
+}
+
+.ai-questions input::placeholder {
+  color: #999; /* 灰色占位符 */
+  font-weight: 300; /* 细体 */
+  font-size: 14px; /* 适当字号 */
+}
+
+/* 聚焦状态优化 */
+.ai-questions input:focus::placeholder {
+  opacity: 0.6; /* 聚焦时透明度变化 */
+  transition: opacity 0.3s ease;
+}
+.ai-questions button {
+  border-radius: 22px; /* 常规圆角 */
+  padding: 0.3rem 1rem;
+  font-size: 0.6rem;
+  font-weight: 700;
+  white-space: nowrap; /* 防止文字折行 */
+  background: #3b82f6;
+  color: white;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.ai-questions button:active {
+  background: #93c5fd; /* 淡蓝色 */
+  transform: scale(0.98); /* 按压效果 */
+}
+
+.ai-responses {
+  height: 10rem;
+  margin: 2rem 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  font-size: 16px;
+  line-height: 1.6;
+  color: #334155;
 }
 
 .tabs {
