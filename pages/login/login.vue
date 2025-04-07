@@ -235,34 +235,34 @@ export default {
         return;
       }
 
-      try {
-        this.isLoading = true;
-        const response = await http.register({
-          uname: this.registerForm.uname,
-          password: this.registerForm.password,
-          email: this.registerForm.email,
-        });
-        if ([201, 202, 203].includes(response.code)) {
-          uni.showToast({ title: "注册成功", icon: "success" });
-          // 注册成功后的操作，如跳转到登录页
-          uni.navigateTo({ url: "/pages/login/login" });
-        } else if (response.code === 402) {
-          uni.showToast({ title: "用户名已存在", icon: "none" });
-        } else if (response.code === 400) {
-          uni.showToast({ title: "请求参数错误", icon: "none" });
-        } else if (response.code === 500) {
-          uni.showToast({ title: "服务器内部错误", icon: "none" });
+      let Url = this.baseUrl + "user/register"
+      const response = await fetch(
+          Url,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json", // 设置请求头为JSON格式
+            },
+            body: JSON.stringify({
+              uname: this.registerForm.uname,
+              password: this.registerForm.password
+            })
+          }
+
+        );
+        const data = await response.json(); // 解析响应数据
+        console.log(data);
+        if (data.code == 203) {
+          uni.showToast({ title: "注册成功", icon: "none" }); // 假设服务器返回的错误信息字段名为"message"
+          this.toggleForm(); // 注册成功后切换到登录表单
+        }else if(data.code == 402){
+          uni.showToast({ title: "用户名已存在", icon: "none" }); // 假设服务器返回的错误信息字段名为"message"
         }
-      } catch (error) {
-        uni.showToast({ title: "注册失败，请稍后重试", icon: "none" });
-      } finally {
-        this.isLoading = false;
-      }
     },
 
     toggleForm() {
-      this.isLogin = !this.isLogin;
-      this.clearErrors();
+      this.isLogin =!this.isLogin;
+      this.clearErrors(); // 切换表单时清除错误信息  
     },
 
     clearErrors() {
@@ -274,7 +274,6 @@ export default {
         agreeTerms: "",
       };
     },
-
     validateEmail(email) {
       const re =
         /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
