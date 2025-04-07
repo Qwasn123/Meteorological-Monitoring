@@ -21,7 +21,5 @@ export default {
 }
 
 /* #endif */
-body {
-	overflow: hidden;
-}
+
 </style>

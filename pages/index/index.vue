@@ -326,11 +326,14 @@
               {{ reaContent }}
               <text v-if="isStreaming" class="typing-cursor">|</text>
             </text>
+
+            <view id="lastMsg"></view>
+          </scroll-view>
+          <view class="ai-reply">
             <text class="ai-text">
               {{ replyContent }}
             </text>
-            <view id="lastMsg"></view>
-          </scroll-view>
+          </view>
 
           <!-- 输入区域 -->
           <view class="ai-questions">
@@ -338,10 +341,12 @@
               type="text"
               placeholder="请输入你的问题"
               :disabled="isStreaming"
+              v-model="userMessage"
+              @keyup.enter="handleChat"
             />
             <button
               @click="handleChat"
-              :disabled="isStreaming"
+              :disabled="isStreaming || !userMessage.trim()"
               :class="{ loading: isStreaming }"
             >
               {{ isStreaming ? "传输中..." : "发送" }}
@@ -391,6 +396,7 @@ export default {
       reaContent: "", // 存储AI思考内容
       isStreaming: false, // 流式传输状态
       errorMessage: "", // 错误信息
+      userMessage: "", // 用户输入的消息
     };
   },
   computed: {
@@ -419,6 +425,10 @@ export default {
     // 修改后的handleChat方法
     async handleChat() {
       try {
+        if (!this.userMessage.trim()) {
+          this.errorMessage = "请输入有效问题";
+          return;
+        }
         this.isStreaming = true;
         this.replyContent = "";
         this.reaContent = "";
@@ -433,7 +443,7 @@ export default {
               Accept: "application/json",
             },
             body: JSON.stringify({
-              message: "你好，重庆今天天气怎么样",
+              message: this.userMessage, // 发送用户输入的消息
               stream: true,
             }),
           }
@@ -471,6 +481,7 @@ export default {
             }
           });
         }
+        this.userMessage = "";
       } catch (error) {
         this.errorMessage = `请求失败: ${error.message}`;
       } finally {
@@ -755,7 +766,13 @@ export default {
 
 .ai-text {
   font-size: 14px;
+  font-weight: 300; /* 细体 */
   color: #334155;
+}
+
+.ai-reply {
+  width: 90%;
+  padding: 15px;
 }
 
 .tabs {
