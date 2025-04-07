@@ -268,6 +268,24 @@
             </view>
           </view>
         </view>
+
+        <!-- AI Tab -->
+        <view v-if="activeTab === 'ai'" class="tab-content">
+          <view class="ai-card">
+            <view class="ai-header">
+              <text class="icon-text ai-icon">🤖</text>
+              <text class="ai-title">气象小笨蛋</text>
+            </view>
+            <view class="typing-container">
+              <view class="typing-effect">
+                你好，我是气象小笨蛋，问我些气象问题吧！
+              </view>
+            </view>
+            <view class="ai-questions">
+              
+            </view>
+          </view>
+        </view>
       </view>
     </view>
   </view>
@@ -279,9 +297,10 @@ export default {
     return {
       // Tab configuration
       tabs: [
-        { label: "传感器数据", value: "sensors" },
+        { label: "传感器", value: "sensors" },
         { label: "控制台", value: "controls" },
         { label: "总控展示", value: "display" },
+        { label: "气象AI", value: "ai" },
       ],
       activeTab: "sensors",
 
@@ -333,6 +352,53 @@ export default {
 </script>
 
 <style>
+/* Try Anime Styles */
+.typing-container {
+  font-family: "Courier New", monospace;
+  margin: 2rem auto;
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.typing-effect {
+  /* 修正动画参数与显示方式 */
+  display: inline-block;
+  font-size: 16px;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  border-right: 2px solid #3b82f6;
+  animation: 
+    typing 3s steps(30, end) forwards,  /* 调整steps值与动画填充模式 */
+    blink-caret 0.8s step-end infinite;
+}
+
+@keyframes typing {
+  from { width: 0 }
+  to { width: 100% }  /* 保持最终状态可见 */
+}
+
+@keyframes blink-caret {
+  from,
+  to {
+    border-color: transparent;
+  }
+  50% {
+    border-color: #2c3e50;
+  }
+}
+
+/* 增加移动端响应式适配 */
+@media (max-width: 480px) {
+  .typing-effect {
+    font-size: 14px;
+    animation: 
+      typing 2.5s steps(25, end) forwards,
+      blink-caret 0.8s step-end infinite;
+  }
+}
+
 /* General Styles */
 .container {
   padding: 20px;
@@ -414,6 +480,23 @@ export default {
 }
 
 /* Tab Styles */
+.ai-card {
+  overflow: visible; /* 允许内容溢出 */
+  min-width: 320px; /* 设置最小宽度 */
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ai-title {
+  font-weight: 600;
+  color: #334155;
+  font-size: 16px;
+}
+
 .tabs {
   border: 1px solid #e2e8f0;
   border-radius: 10px;
