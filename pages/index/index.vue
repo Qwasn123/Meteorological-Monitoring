@@ -111,18 +111,41 @@
               <text class="control-title">风扇控制</text>
             </view>
             <view class="control-status">
-              <text>转速: {{ fanSpeed }} RPM</text>
+              <text>转速档位: {{ fanSpeed }} </text>
               <text :class="fanSpeed > 0 ? 'status-active' : 'status-inactive'">
                 {{ fanSpeed > 0 ? "Active" : "Inactive" }}
               </text>
             </view>
-            <text class="control-range">范围: 0-5000 RPM</text>
+            <text class="control-range">范围: 0-3 档</text>
+
+            <view class="control-header">
+              <text
+                class="icon-text"
+                :class="alarmMode > 0 ? 'alarm-on-icon' : 'alarm-off-icon'"
+              >
+                {{ alarmMode > 0 ? "🔊" : "🔇" }}
+              </text>
+              <text class="control-title">蜂鸣器警报</text>
+            </view>
+            <view class="control-status">
+              <text>模式: {{ alarmModes[alarmMode] }}</text>
+              <text
+                :class="
+                  alarmMode > 0
+                    ? 'status-alarm'
+                    : 'status-inactive'
+                "
+              >
+                {{ alarmMode > 0 ? "注意" : "安静" }}
+              </text>
+            </view>
+
             <slider
               :value="fanSpeed"
               @change="onFanSliderChange"
               :min="0"
-              :max="5000"
-              :step="100"
+              :max="3"
+              :step="1"
               class="slider"
               activeColor="#3b82f6"
               backgroundColor="#e5e7eb"
@@ -139,52 +162,14 @@
                 <text>{{ preset.label }}</text>
               </view>
             </view>
+            <view
+              @click=" fanSpeed == 0 ? alarmMode = 0 : alarmMode = 1"
+              :class="['test-button']"
+            >
+              <text>测试</text>
+            </view>
           </view>
 
-          <!-- Buzzer Control -->
-          <view class="control-card">
-            <view class="control-header">
-              <text
-                class="icon-text"
-                :class="alarmMode > 0 ? 'alarm-on-icon' : 'alarm-off-icon'"
-              >
-                {{ alarmMode > 0 ? "🔊" : "🔇" }}
-              </text>
-              <text class="control-title">蜂鸣器警报</text>
-            </view>
-            <view class="control-status">
-              <text>模式: {{ alarmModes[alarmMode] }}</text>
-              <text
-                :class="
-                  alarmActive && alarmMode > 0
-                    ? 'status-alarm'
-                    : 'status-inactive'
-                "
-              >
-                {{ alarmActive && alarmMode > 0 ? "注意" : "安静" }}
-              </text>
-            </view>
-            <text class="control-range">支持开关</text>
-            <view class="alarm-buttons">
-              <view
-                v-for="(mode, index) in alarmModes"
-                :key="index"
-                @click="alarmMode = index"
-                :class="[
-                  'mode-button',
-                  alarmMode === index ? 'mode-active' : '',
-                ]"
-              >
-                <text>{{ mode }}</text>
-              </view>
-            </view>
-            <view
-              @click="alarmActive = !alarmActive"
-              :class="['test-button', alarmActive ? 'alarm-active' : '']"
-            >
-              <text>{{ alarmActive ? "停止测试" : "测试" }}</text>
-            </view>
-          </view>
         </view>
 
         <!-- Display Tab -->
@@ -270,9 +255,8 @@
         </view>
 
         <!-- AI Tab -->
-
         <view v-if="activeTab === 'ai'" class="tab-content">
-          <!-- 1 -->
+          <!-- 1 版 ui 设计-->
           <!-- <view class="ai-header">
             <text class="icon-text ai-icon">🤖</text>
             <text class="ai-title">气象小笨蛋</text>
@@ -292,7 +276,7 @@
             <button @click="handleChat">发送</button>
           </view> -->
 
-          <!-- 2 -->
+          <!-- 2 版 嵌入式 iframe -->
           <!-- <view class="mobile-frame">
               <iframe
                 src="http://154.39.79.242:8080/ui/chat/bb5f952bff8a54e1"
@@ -303,7 +287,7 @@
               </iframe>
             </view> -->
 
-          <!-- 3 -->
+          <!-- 3 调用对话 API -->
           <view class="ai-header">
             <text class="icon-text ai-icon">🤖</text>
             <text class="ai-title">气象小笨蛋</text>
@@ -372,19 +356,19 @@ export default {
       activeTab: "sensors",
 
       // Sensor data
-      temperature: 25.0,
-      humidity: 45,
-      gasLevel: 120,
-      fanSpeed: 2500,
+      temperature: 0,
+      humidity: 0,
+      gasLevel: 0,
+      fanSpeed: 0,
       alarmMode: 0,
       alarmActive: false,
 
       // Fan presets
       fanPresets: [
         { label: "关闭", value: 0 },
-        { label: "低速", value: 1500 },
-        { label: "中速", value: 3000 },
-        { label: "高速", value: 5000 },
+        { label: "低档", value: 1 },
+        { label: "中档", value: 2 },
+        { label: "高档", value: 3 },
       ],
 
       // Alarm sound effect modes
@@ -929,6 +913,7 @@ export default {
 .control-header {
   display: flex;
   align-items: center;
+  margin-top: 1rem;
   margin-bottom: 12px;
 }
 
@@ -962,6 +947,7 @@ export default {
   display: flex;
   justify-content: space-between;
   gap: 10px;
+  margin-bottom: 1.5rem;
 }
 
 .preset-button {
