@@ -129,13 +129,7 @@
             </view>
             <view class="control-status">
               <text>模式: {{ alarmModes[alarmMode] }}</text>
-              <text
-                :class="
-                  alarmMode > 0
-                    ? 'status-alarm'
-                    : 'status-inactive'
-                "
-              >
+              <text :class="alarmMode > 0 ? 'status-alarm' : 'status-inactive'">
                 {{ alarmMode > 0 ? "注意" : "安静" }}
               </text>
             </view>
@@ -162,14 +156,10 @@
                 <text>{{ preset.label }}</text>
               </view>
             </view>
-            <view
-              @click=" fanSpeed == 0 ? alarmMode = 0 : alarmMode = 1"
-              :class="['test-button']"
-            >
+            <view @click="handleTest" :class="['test-button']">
               <text>测试</text>
             </view>
           </view>
-
         </view>
 
         <!-- Display Tab -->
@@ -220,8 +210,8 @@
                   </view>
 
                   <view class="oled-row">
-                    <text>转速:</text>
-                    <text>{{ Math.round(fanSpeed / 50) }}%</text>
+                    <text>转速档位:</text>
+                    <text>{{ fanSpeed }}档</text>
                   </view>
                   <view class="oled-progress">
                     <view
@@ -472,6 +462,46 @@ export default {
         this.isStreaming = false;
       }
     },
+    // 测试方法
+    async handleTest() {
+      this.alarmMode = this.fanSpeed === 0 ? 0 : 1;
+      try {
+        const response = await fetch(
+          "http://154.21.200.171:8081/api/devices/control-devices",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              speed: this.fanSpeed,
+            }),
+          }
+        );
+        if (!response.ok)
+          throw new Error(`HTTP error! status: ${response.status}`);
+      } catch (error) {
+        this.errorMessage = `请求失败: ${error.message}`;
+      }
+    },
+    async fetchSensorData() {
+      try {
+        const response = await fetch("http://154.21.200.171:8081/dataselect");
+        if (!response.ok)
+          throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        const sensorData = data[0] || {};
+        // 假设接口返回数据结构为 { temperature, humidity, gasLevel, fanSpeed, alarmMode }
+        this.temperature = sensorData.temp || 0; // temp → temperature
+        this.humidity = sensorData.hum || 0; // hum → humidity
+        this.gasLevel = sensorData.gas || 0; // gas → gasLevel
+        this.fanSpeed = sensorData.fan_level || 0; // fan_level → fanSpeed
+        this.alarmActive = sensorData.final_stat === 1; // final_stat → alarmActive
+        this.alarmMode = this.alarmActive ? 1 : 0; // 根据 alarmActive 同步 alarmMode
+      } catch (error) {
+        console.error("传感器数据获取失败:", error);
+      }
+    },
 
     // Unicode转中文工具方法
     unicodeToChs(str) {
@@ -479,6 +509,18 @@ export default {
         return String.fromCharCode(parseInt(grp, 16));
       });
     },
+  },
+  // 在 mounted 中启动定时器
+  mounted() {
+    this.fetchSensorData(); // 立即获取一次数据
+    this.timer = setInterval(() => {
+      this.fetchSensorData();
+    }, 5000); // 每5秒轮询
+  },
+
+  // 在组件销毁前清除定时器
+  beforeDestroy() {
+    if (this.timer) clearInterval(this.timer);
   },
 };
 </script>
