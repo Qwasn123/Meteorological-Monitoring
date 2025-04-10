@@ -299,6 +299,14 @@ export default {
     return {
       // 语音识别状态
       isRecording: false,
+      recognition: null,
+      searchText: '',
+      finalTranscript: '',
+      interimTranscript: '',
+      currentLang: 'zh-CN',
+      synth: window.speechSynthesis,
+      voices: [],
+      isSpeechSupported: 'webkitSpeechRecognition' in window && window.speechSynthesis,
       audioStream: null,
       mediaRecorder: null,
       audioChunks: [],
@@ -371,28 +379,88 @@ export default {
 
     // 开始录音
     async startRecording() {
-      try {
-        this.audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        this.mediaRecorder = new MediaRecorder(this.audioStream);
-        this.isRecording = true;
+      if (!this.isSpeechSupported) {
+        this.errorMessage = '当前浏览器不支持语音识别功能';
+        return;
+      }
 
-        this.mediaRecorder.ondataavailable = (e) => {
-          this.audioChunks.push(e.data);
+      try {
+        // 创建语法规则
+        const grammar = '#JSGF V1.0; grammar commands; public <command> = 温度 | 湿度 | 风速 | 降水 | 刷新 | 切换语言 ;';
+        const speechGrammarList = new (window.webkitSpeechGrammarList || window.SpeechGrammarList)();
+        speechGrammarList.addFromString(grammar, 1);
+
+        this.recognition = new webkitSpeechRecognition();
+        this.recognition.grammars = speechGrammarList;
+        this.recognition.continuous = true;
+        this.recognition.interimResults = true;
+        this.recognition.lang = this.currentLang;
+        this.recognition.maxAlternatives = 3;
+
+        this.recognition.onstart = () => {
+          this.isRecording = true;
+          this.finalTranscript = '';
+          this.interimTranscript = '';
         };
 
-        this.mediaRecorder.start();
+        // 初始化语音合成
+        this.synth.onvoiceschanged = () => {
+          this.voices = this.synth.getVoices();
+        };
+
+        // 语言切换方法
+        this.switchLanguage = (lang) => {
+          this.currentLang = lang;
+          this.recognition.lang = lang;
+          this.$forceUpdate();
+        };
+
+        this.recognition.onresult = (event) => {
+          const command = event.results[0][0].transcript;
+          this.handleVoiceCommand(command);
+          // 添加语音反馈
+          const utterance = new SpeechSynthesisUtterance(`已执行 ${command}`);
+          utterance.voice = this.voices.find(v => v.lang === this.currentLang);
+          this.synth.speak(utterance);
+
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+              this.finalTranscript += event.results[i][0].transcript;
+              this.userMessage = this.finalTranscript;
+            } else {
+              this.interimTranscript = event.results[i][0].transcript;
+              this.userMessage = this.interimTranscript;
+            }
+          }
+        };
+
+        this.recognition.onerror = (event) => {
+          this.errorMessage = `语音识别错误: ${event.error}`;
+          this.stopRecording();
+        };
+
+        this.recognition.start();
+
+        // 获取麦克风权限
+        this.audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
       } catch (error) {
         this.errorMessage = `麦克风访问失败: ${error.message}`;
+        this.stopRecording();
       }
     },
 
     // 停止录音
     async stopRecording() {
-      if (this.mediaRecorder) {
-        this.mediaRecorder.stop();
-        this.isRecording = false;
-        this.audioStream.getTracks().forEach((track) => track.stop());
+      if (this.recognition) {
+        this.recognition.stop();
+        this.recognition = null;
       }
+      if (this.audioStream) {
+        this.audioStream.getTracks().forEach(track => track.stop());
+        this.audioStream = null;
+      }
+      this.isRecording = false;
+      this.userMessage = this.finalTranscript;
     },
 
     // Fix for tab switching
@@ -537,6 +605,14 @@ export default {
       return str.replace(/\\u([\d\w]{4})/gi, function (match, grp) {
         return String.fromCharCode(parseInt(grp, 16));
       });
+    },
+    handleVoiceCommand(command) {
+      console.log('语音识别结果:', command)
+      this.searchText = command
+      this.$nextTick(() => {
+        console.log('当前输入框值:', this.searchText)
+        this.handleSearch()
+      })
     },
   },
   // 在 mounted 中启动定时器
