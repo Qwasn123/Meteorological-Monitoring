@@ -24,15 +24,10 @@
       <view class="panel-content">
         <view class="tabs">
           <view class="tab-buttons">
-            <view
-              v-for="(tab, index) in tabs"
-              :key="index"
-              @click="switchTab(tab.value)"
-              :class="[
-                'tab-button',
-                activeTab === tab.value ? 'tab-active' : '',
-              ]"
-            >
+            <view v-for="(tab, index) in tabs" :key="index" @click="switchTab(tab.value)" :class="[
+            'tab-button',
+            activeTab === tab.value ? 'tab-active' : '',
+          ]">
               <text class="tab-text">{{ tab.label }}</text>
             </view>
           </view>
@@ -51,10 +46,7 @@
               <text class="sensor-value">{{ temperature }}°C</text>
               <text class="sensor-accuracy">准确度: ±0.5°C</text>
               <view class="progress-bar">
-                <view
-                  class="progress-fill temp-gradient"
-                  :style="{ width: `${(temperature / 50) * 100}%` }"
-                ></view>
+                <view class="progress-fill temp-gradient" :style="{ width: `${(temperature / 50) * 100}%` }"></view>
               </view>
             </view>
             <!-- Humidity -->
@@ -66,10 +58,7 @@
               <text class="sensor-value">{{ humidity }}%</text>
               <text class="sensor-accuracy">准确度: ±3%RH</text>
               <view class="progress-bar">
-                <view
-                  class="progress-fill humidity-fill"
-                  :style="{ width: `${humidity}%` }"
-                ></view>
+                <view class="progress-fill humidity-fill" :style="{ width: `${humidity}%` }"></view>
               </view>
             </view>
           </view>
@@ -83,21 +72,17 @@
             <view class="sensor-status">
               <text class="sensor-value">{{ gasLevel }} ppm</text>
               <text :class="`status-text ${gasStatus.cssClass}`">{{
-                gasStatus.status
-              }}</text>
+            gasStatus.status
+          }}</text>
             </view>
             <text class="sensor-accuracy">范围: 0-1000ppm</text>
             <view class="progress-bar">
-              <view
-                :class="`progress-fill ${
-                  gasLevel < 400
-                    ? 'gas-safe'
-                    : gasLevel < 700
-                    ? 'gas-warning'
-                    : 'gas-danger'
-                }`"
-                :style="{ width: `${(gasLevel / 1000) * 100}%` }"
-              ></view>
+              <view :class="`progress-fill ${gasLevel < 400
+              ? 'gas-safe'
+              : gasLevel < 700
+                ? 'gas-warning'
+                : 'gas-danger'
+            }`" :style="{ width: `${(gasLevel / 1000) * 100}%` }"></view>
             </view>
           </view>
         </view>
@@ -119,10 +104,7 @@
             <text class="control-range">范围: 0-3 档</text>
 
             <view class="control-header">
-              <text
-                class="icon-text"
-                :class="alarmMode > 0 ? 'alarm-on-icon' : 'alarm-off-icon'"
-              >
+              <text class="icon-text" :class="alarmMode > 0 ? 'alarm-on-icon' : 'alarm-off-icon'">
                 {{ alarmMode > 0 ? "🔊" : "🔇" }}
               </text>
               <text class="control-title">蜂鸣器警报</text>
@@ -134,25 +116,11 @@
               </text>
             </view>
 
-            <slider
-              :value="fanSpeed"
-              @change="onFanSliderChange"
-              :min="0"
-              :max="3"
-              :step="1"
-              class="slider"
-              activeColor="#3b82f6"
-              backgroundColor="#e5e7eb"
-              block-size="24"
-              show-value
-            />
+            <slider :value="fanSpeed" @change="onFanSliderChange" :min="0" :max="3" :step="1" class="slider"
+              activeColor="#3b82f6" backgroundColor="#e5e7eb" block-size="24" show-value />
             <view class="preset-buttons">
-              <view
-                v-for="(preset, index) in fanPresets"
-                :key="index"
-                @click="fanSpeed = preset.value"
-                class="preset-button"
-              >
+              <view v-for="(preset, index) in fanPresets" :key="index" @click="fanSpeed = preset.value"
+                class="preset-button">
                 <text>{{ preset.label }}</text>
               </view>
             </view>
@@ -179,10 +147,7 @@
                     <text>{{ temperature }}°C</text>
                   </view>
                   <view class="oled-progress">
-                    <view
-                      class="oled-progress-fill"
-                      :style="{ width: `${(temperature / 50) * 100}%` }"
-                    ></view>
+                    <view class="oled-progress-fill" :style="{ width: `${(temperature / 50) * 100}%` }"></view>
                   </view>
 
                   <view class="oled-row">
@@ -190,10 +155,7 @@
                     <text>{{ humidity }}%</text>
                   </view>
                   <view class="oled-progress">
-                    <view
-                      class="oled-progress-fill"
-                      :style="{ width: `${humidity}%` }"
-                    ></view>
+                    <view class="oled-progress-fill" :style="{ width: `${humidity}%` }"></view>
                   </view>
                 </view>
 
@@ -203,10 +165,7 @@
                     <text>{{ gasLevel }}ppm</text>
                   </view>
                   <view class="oled-progress">
-                    <view
-                      class="oled-progress-fill"
-                      :style="{ width: `${(gasLevel / 1000) * 100}%` }"
-                    ></view>
+                    <view class="oled-progress-fill" :style="{ width: `${(gasLevel / 1000) * 100}%` }"></view>
                   </view>
 
                   <view class="oled-row">
@@ -214,10 +173,7 @@
                     <text>{{ fanSpeed }}档</text>
                   </view>
                   <view class="oled-progress">
-                    <view
-                      class="oled-progress-fill"
-                      :style="{ width: `${(fanSpeed / 5000) * 100}%` }"
-                    ></view>
+                    <view class="oled-progress-fill" :style="{ width: `${(fanSpeed / 5000) * 100}%` }"></view>
                   </view>
                 </view>
               </view>
@@ -234,10 +190,10 @@
               <view class="oled-footer">
                 <text :class="alarmActive ? 'oled-alert' : ''">
                   {{
-                    alarmActive
-                      ? `WARNING: GAS LEVEL ${gasStatus.status.toUpperCase()}`
-                      : "SYSTEM OPERATING NORMALLY"
-                  }}
+            alarmActive
+              ? `WARNING: GAS LEVEL ${gasStatus.status.toUpperCase()}`
+              : "SYSTEM OPERATING NORMALLY"
+          }}
                 </text>
               </view>
             </view>
@@ -290,12 +246,7 @@
           </view>
 
           <!-- 动态响应区域 -->
-          <scroll-view
-            class="ai-responses"
-            scroll-y
-            :scroll-into-view="'lastMsg'"
-            scroll-with-animation
-          >
+          <scroll-view class="ai-responses" scroll-y :scroll-into-view="'lastMsg'" scroll-with-animation>
             <text class="ai-text">
               {{ reaContent }}
               <text v-if="isStreaming" class="typing-cursor">|</text>
@@ -311,18 +262,17 @@
 
           <!-- 输入区域 -->
           <view class="ai-questions">
-            <input
-              type="text"
-              placeholder="请输入你的问题"
-              :disabled="isStreaming"
-              v-model="userMessage"
-              @keyup.enter="handleChat"
-            />
-            <button
-              @click="handleChat"
-              :disabled="isStreaming || !userMessage.trim()"
-              :class="{ loading: isStreaming }"
-            >
+            <!-- 语音输入按钮 -->
+            <button @click="toggleRecording" 
+            :class="['record-button', isRecording ? 'recording' : '']" 
+            title="语音输入">
+              {{ isRecording? '🛑' : '🎙️' }}
+            </button>
+
+            <input type="text" placeholder="请输入你的问题" :disabled="isStreaming" v-model="userMessage"
+              @keyup.enter="handleChat" />
+            <button @click="handleChat" :disabled="isStreaming || !userMessage.trim()"
+              :class="{ loading: isStreaming }">
               {{ isStreaming ? "传输中..." : "发送" }}
             </button>
           </view>
@@ -336,6 +286,12 @@
 export default {
   data() {
     return {
+      // 语音识别状态
+      isRecording: false,
+      audioStream: null,
+      mediaRecorder: null,
+      audioChunks: [],
+
       // Tab configuration
       tabs: [
         { label: "传感器", value: "sensors" },
@@ -388,6 +344,41 @@ export default {
     },
   },
   methods: {
+    // 录音控制
+    async toggleRecording() {
+      if (this.isRecording) {
+        await this.stopRecording();
+      } else {
+        await this.startRecording();
+      }
+    },
+
+    // 开始录音
+    async startRecording() {
+      try {
+        this.audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        this.mediaRecorder = new MediaRecorder(this.audioStream);
+        this.isRecording = true;
+
+        this.mediaRecorder.ondataavailable = (e) => {
+          this.audioChunks.push(e.data);
+        };
+
+        this.mediaRecorder.start();
+      } catch (error) {
+        this.errorMessage = `麦克风访问失败: ${error.message}`;
+      }
+    },
+
+    // 停止录音
+    async stopRecording() {
+      if (this.mediaRecorder) {
+        this.mediaRecorder.stop();
+        this.isRecording = false;
+        this.audioStream.getTracks().forEach((track) => track.stop());
+      }
+    },
+
     // Fix for tab switching
     switchTab(tabValue) {
       this.activeTab = tabValue;
@@ -548,6 +539,36 @@ export default {
 </script>
 
 <style>
+/* 语音输入按钮样式 */
+.record-button {
+  background: #3b82f6;
+  color: white;
+  border-radius: 50%;
+  padding: 8px;
+  width: 44px;
+  height: 44px;
+  font-size: 28px;
+  transition: all 0.3s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  &.recording {
+    background: #ef4444;
+    animation: pulse 1s infinite;
+  } 
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.ai-questions {
+ gap: 8px;
+ button {
+  flex-shrink: 0;
+ } 
+}
 /* 新增样式 */
 .stream-status {
   font-size: 12px;
@@ -582,10 +603,12 @@ export default {
 }
 
 @keyframes pulse {
+
   0%,
   100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.5;
   }
@@ -594,11 +617,15 @@ export default {
 .mobile-frame {
   position: relative;
   width: 100%;
-  padding-top: 177.78%; /* 9:16比例 (9/16=56.25%) */
-  max-width: 375px; /* 移动端标准宽度 */
-  margin: 0 auto; /* 水平居中 */
+  padding-top: 177.78%;
+  /* 9:16比例 (9/16=56.25%) */
+  max-width: 375px;
+  /* 移动端标准宽度 */
+  margin: 0 auto;
+  /* 水平居中 */
   overflow: hidden;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1); /* 模拟手机边框 */
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  /* 模拟手机边框 */
   border-radius: 20px;
 }
 
@@ -609,8 +636,10 @@ export default {
   width: 100%;
   height: 100%;
   transform-origin: top left;
-  transform: scale(1); /* 可调整缩放比例 */
+  transform: scale(1);
+  /* 可调整缩放比例 */
 }
+
 /* Try Anime Styles */
 .typing-container {
   font-family: "Courier New", monospace;
@@ -630,23 +659,29 @@ export default {
   overflow: hidden;
   border-right: 2px solid #3b82f6;
   animation: typing 3s steps(30, end) forwards,
-    /* 调整steps值与动画填充模式 */ blink-caret 0.8s step-end infinite;
+    /* 调整steps值与动画填充模式 */
+    blink-caret 0.8s step-end infinite;
 }
 
 @keyframes typing {
   from {
     width: 0;
   }
+
   to {
     width: 100%;
-  } /* 保持最终状态可见 */
+  }
+
+  /* 保持最终状态可见 */
 }
 
 @keyframes blink-caret {
+
   from,
   to {
     border-color: transparent;
   }
+
   50% {
     border-color: #2c3e50;
   }
@@ -765,7 +800,8 @@ export default {
 }
 
 .ai-questions input {
-  padding: 10px; /* 增加内边距 */
+  padding: 10px;
+  /* 增加内边距 */
   border-bottom: 1px dashed #95a5a6;
   width: 70%;
   border-image: linear-gradient(to right, #3498db, #e74c3c);
@@ -775,22 +811,29 @@ export default {
 }
 
 .ai-questions input::placeholder {
-  color: #999; /* 灰色占位符 */
-  font-weight: 300; /* 细体 */
-  font-size: 14px; /* 适当字号 */
+  color: #999;
+  /* 灰色占位符 */
+  font-weight: 300;
+  /* 细体 */
+  font-size: 14px;
+  /* 适当字号 */
 }
 
 /* 聚焦状态优化 */
 .ai-questions input:focus::placeholder {
-  opacity: 0.6; /* 聚焦时透明度变化 */
+  opacity: 0.6;
+  /* 聚焦时透明度变化 */
   transition: opacity 0.3s ease;
 }
+
 .ai-questions button {
-  border-radius: 22px; /* 常规圆角 */
+  border-radius: 22px;
+  /* 常规圆角 */
   padding: 0.3rem 1rem;
   font-size: 0.6rem;
   font-weight: 700;
-  white-space: nowrap; /* 防止文字折行 */
+  white-space: nowrap;
+  /* 防止文字折行 */
   background: #3b82f6;
   color: white;
   cursor: pointer;
@@ -798,8 +841,10 @@ export default {
 }
 
 .ai-questions button:active {
-  background: #93c5fd; /* 淡蓝色 */
-  transform: scale(0.98); /* 按压效果 */
+  background: #93c5fd;
+  /* 淡蓝色 */
+  transform: scale(0.98);
+  /* 按压效果 */
 }
 
 .ai-responses {
@@ -809,12 +854,14 @@ export default {
   background: #f8fafc;
   border-radius: 8px;
   line-height: 1.6;
-  white-space: pre-wrap; /* 保留换行 */
+  white-space: pre-wrap;
+  /* 保留换行 */
 }
 
 .ai-text {
   font-size: 14px;
-  font-weight: 300; /* 细体 */
+  font-weight: 300;
+  /* 细体 */
   color: #334155;
 }
 
@@ -878,7 +925,7 @@ export default {
     flex-direction: row;
   }
 
-  .sensor-grid > .sensor-card {
+  .sensor-grid>.sensor-card {
     flex: 1;
   }
 }
@@ -1176,10 +1223,12 @@ export default {
 }
 
 @keyframes blink {
+
   0%,
   100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.5;
   }
