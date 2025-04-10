@@ -61,6 +61,17 @@
                 <view class="progress-fill humidity-fill" :style="{ width: `${humidity}%` }"></view>
               </view>
             </view>
+            <!-- Fire -->
+            <!-- 修改火灾预警部分的代码 -->
+            <view class="sensor-card">
+                <view class="sensor-header">
+                  <text class="icon-text temp-icon">🔥</text>
+                  <text class="sensor-title">火灾预警</text>
+                  <text :class="`fire-modify status-text ${fireStatus.cssClass}`">{{
+                    fireStatus.status
+                  }}</text>
+                </view>
+            </view>
           </view>
 
           <!-- Gas Sensor -->
@@ -294,9 +305,9 @@ export default {
 
       // Tab configuration
       tabs: [
-        { label: "传感器", value: "sensors" },
+        { label: "主页", value: "sensors" },
         { label: "控制台", value: "controls" },
-        { label: "总控展示", value: "display" },
+        { label: "OLED", value: "display" },
         { label: "气象AI", value: "ai" },
       ],
       activeTab: "sensors",
@@ -340,6 +351,11 @@ export default {
         return { status: "Elevated", cssClass: "status-elevated" };
       if (this.gasLevel < 800)
         return { status: "High", cssClass: "status-high" };
+      return { status: "Danger", cssClass: "status-danger" };
+    },
+    fireStatus() {
+      if (this.fireLevel == 0)
+        return { status: "Safe", cssClass: "status-safe" };
       return { status: "Danger", cssClass: "status-danger" };
     },
   },
@@ -917,7 +933,7 @@ export default {
 .sensor-grid {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 15px;
 }
 
 @media (min-width: 768px) {
@@ -933,7 +949,7 @@ export default {
 .sensor-card {
   border: 1px solid #e2e8f0;
   border-radius: 12px;
-  padding: 20px;
+  padding: 15px;
   background-color: #ffffff;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -948,6 +964,19 @@ export default {
   display: flex;
   align-items: center;
   margin-bottom: 12px;
+}
+
+.sensor-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sensor-status-container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto; /* 确保状态靠右对齐 */
 }
 
 .sensor-title {
@@ -969,11 +998,16 @@ export default {
   margin-bottom: 12px;
 }
 
+.fire-modify {
+  display: flex;
+  position: relative;
+  left:45%;
+}
+
 .sensor-status {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
+  align-items: right;
 }
 
 /* Progress Bar Styles */
