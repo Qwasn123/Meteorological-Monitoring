@@ -396,6 +396,27 @@ export default {
     onFanSliderChange(e) {
       this.fanSpeed = e.detail.value;
     },
+    async handleTest() {
+      this.alarmMode = this.fanSpeed === 0 ? 0 : 1;
+      try {
+        const response = await fetch(
+          "http://154.21.200.171:8081/api/devices/control-devices",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              speed: this.fanSpeed,
+            }),
+          }
+        );
+        if (!response.ok)
+          throw new Error(`HTTP error! status: ${response.status}`);
+      } catch (error) {
+        this.errorMessage = `请求失败: ${error.message}`;
+      }
+    },
     // 修改后的handleChat方法
     async handleChat() {
       try {
@@ -450,6 +471,27 @@ export default {
               if (data.content) {
                 this.replyContent += this.unicodeToChs(data.content);
               }
+              if (this.replyContent == "##HARDWARE_MODIFY_TO_0##") {
+                this.fanSpeed = 0;
+                this.alarmMode = 0;
+                this.replyContent = "已传输并执行指令";
+                this.handleTest();
+              } else if (this.replyContent == "##HARDWARE_MODIFY_TO_1##") {
+                this.fanSpeed = 1;
+                this.alarmMode = 1;
+                this.replyContent = "已传输并执行指令";
+                this.handleTest();
+              } else if (this.replyContent == "##HARDWARE_MODIFY_TO_2##") {
+                this.fanSpeed = 2;
+                this.alarmMode = 1;
+                this.replyContent = "已传输并执行指令";
+                this.handleTest();
+              } else if (this.replyContent == "##HARDWARE_MODIFY_TO_3##") {
+                this.fanSpeed = 3;
+                this.alarmMode = 1;
+                this.replyContent = "已传输并执行指令";
+                this.handleTest();
+              }
             } catch (e) {
               console.warn("数据解析异常:", e);
             }
@@ -463,27 +505,7 @@ export default {
       }
     },
     // 测试方法
-    async handleTest() {
-      this.alarmMode = this.fanSpeed === 0 ? 0 : 1;
-      try {
-        const response = await fetch(
-          "http://154.21.200.171:8081/api/devices/control-devices",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              speed: this.fanSpeed,
-            }),
-          }
-        );
-        if (!response.ok)
-          throw new Error(`HTTP error! status: ${response.status}`);
-      } catch (error) {
-        this.errorMessage = `请求失败: ${error.message}`;
-      }
-    },
+
     async fetchSensorData() {
       try {
         const response = await fetch("http://154.21.200.171:8081/dataselect");
