@@ -418,14 +418,12 @@ export default {
   computed: {
     // Gas level status
     gasStatus() {
-      if (this.gasLevel < 200)
-        return { status: "Safe", cssClass: "status-safe" };
-      if (this.gasLevel < 400)
-        return { status: "Normal", cssClass: "status-normal" };
-      if (this.gasLevel < 600)
-        return { status: "Elevated", cssClass: "status-elevated" };
       if (this.gasLevel < 800)
-        return { status: "High", cssClass: "status-high" };
+        return { status: "Safe", cssClass: "status-safe" };
+      if (this.gasLevel < 1000)
+        return { status: "Normal", cssClass: "status-normal" };
+      if (this.gasLevel < 1500)
+        return { status: "Elevated", cssClass: "status-elevated" };
       return { status: "Danger", cssClass: "status-danger" };
     },
     fireStatus() {
