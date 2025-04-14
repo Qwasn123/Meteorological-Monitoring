@@ -24,10 +24,15 @@
       <view class="panel-content">
         <view class="tabs">
           <view class="tab-buttons">
-            <view v-for="(tab, index) in tabs" :key="index" @click="switchTab(tab.value)" :class="[
-            'tab-button',
-            activeTab === tab.value ? 'tab-active' : '',
-          ]">
+            <view
+              v-for="(tab, index) in tabs"
+              :key="index"
+              @click="switchTab(tab.value)"
+              :class="[
+                'tab-button',
+                activeTab === tab.value ? 'tab-active' : '',
+              ]"
+            >
               <text class="tab-text">{{ tab.label }}</text>
             </view>
           </view>
@@ -37,40 +42,49 @@
         <view v-if="activeTab === 'sensors'" class="tab-content">
           <!-- Temperature & Humidity -->
           <view class="sensor-grid">
-            <!-- Temperature -->
-            <view class="sensor-card">
+            <!-- Weather -->
+            <view
+              class="weather-card"
+              :class="wp_code === '00' ? 'sunny' : 'cloudy'"
+            >
               <view class="sensor-header">
-                <text class="icon-text temp-icon">🌡️</text>
-                <text class="sensor-title">温度</text>
+                <text class="icon-text">{{ weatherIcon }}</text>
+                <text class="sensor-title">户外天气</text>
               </view>
-              <text class="sensor-value">{{ temperature }}°C</text>
-              <text class="sensor-accuracy">准确度: ±0.5°C</text>
-              <view class="progress-bar">
-                <view class="progress-fill temp-gradient" :style="{ width: `${(temperature / 50) * 100}%` }"></view>
+              <view class="weather-content">
+                <text class="weather-temp">{{ wea_temperature }}°C</text>
+                <text class="weather-desc">{{ weatherDescription }}</text>
               </view>
             </view>
-            <!-- Humidity -->
-            <view class="sensor-card">
-              <view class="sensor-header">
-                <text class="icon-text humidity-icon">💧</text>
-                <text class="sensor-title">湿度</text>
-              </view>
-              <text class="sensor-value">{{ humidity }}%</text>
-              <text class="sensor-accuracy">准确度: ±3%RH</text>
-              <view class="progress-bar">
-                <view class="progress-fill humidity-fill" :style="{ width: `${humidity}%` }"></view>
-              </view>
-            </view>
-            <!-- Fire -->
-            <!-- 修改火灾预警部分的代码 -->
-            <view class="sensor-card">
+            <view class="sensor-container">
+              <!-- Temperature -->
+              <view class="sensor-card sensor-left">
                 <view class="sensor-header">
-                  <text class="icon-text temp-icon">🔥</text>
-                  <text class="sensor-title">火灾预警</text>
-                  <text :class="`fire-modify status-text ${fireStatus.cssClass}`">{{
-                    fireStatus.status
-                  }}</text>
+                  <text class="icon-text temp-icon">🌡️</text>
+                  <text class="sensor-title">温度</text>
                 </view>
+                <text class="sensor-value">{{ temperature }}°C</text>
+              </view>
+              <!-- Humidity -->
+              <view class="sensor-card sensor-right">
+                <view class="sensor-header">
+                  <text class="icon-text humidity-icon">💧</text>
+                  <text class="sensor-title">湿度</text>
+                </view>
+                <text class="sensor-value">{{ humidity }}%</text>
+              </view>
+            </view>
+
+            <!-- Fire -->
+            <view class="sensor-card">
+              <view class="sensor-header">
+                <text class="icon-text temp-icon">🔥</text>
+                <text class="sensor-title">火灾预警</text>
+                <text
+                  :class="`fire-modify status-text ${fireStatus.cssClass}`"
+                  >{{ fireStatus.status }}</text
+                >
+              </view>
             </view>
           </view>
 
@@ -83,17 +97,21 @@
             <view class="sensor-status">
               <text class="sensor-value">{{ gasLevel }} ppm</text>
               <text :class="`status-text ${gasStatus.cssClass}`">{{
-            gasStatus.status
-          }}</text>
+                gasStatus.status
+              }}</text>
             </view>
             <text class="sensor-accuracy">范围: 0-1000ppm</text>
             <view class="progress-bar">
-              <view :class="`progress-fill ${gasLevel < 400
-              ? 'gas-safe'
-              : gasLevel < 700
-                ? 'gas-warning'
-                : 'gas-danger'
-            }`" :style="{ width: `${(gasLevel / 1000) * 100}%` }"></view>
+              <view
+                :class="`progress-fill ${
+                  gasLevel < 400
+                    ? 'gas-safe'
+                    : gasLevel < 700
+                    ? 'gas-warning'
+                    : 'gas-danger'
+                }`"
+                :style="{ width: `${(gasLevel / 1000) * 100}%` }"
+              ></view>
             </view>
           </view>
         </view>
@@ -115,7 +133,10 @@
             <text class="control-range">范围: 0-3 档</text>
 
             <view class="control-header">
-              <text class="icon-text" :class="alarmMode > 0 ? 'alarm-on-icon' : 'alarm-off-icon'">
+              <text
+                class="icon-text"
+                :class="alarmMode > 0 ? 'alarm-on-icon' : 'alarm-off-icon'"
+              >
                 {{ alarmMode > 0 ? "🔊" : "🔇" }}
               </text>
               <text class="control-title">蜂鸣器警报</text>
@@ -127,11 +148,25 @@
               </text>
             </view>
 
-            <slider :value="fanSpeed" @change="onFanSliderChange" :min="0" :max="3" :step="1" class="slider"
-              activeColor="#3b82f6" backgroundColor="#e5e7eb" block-size="24" show-value />
+            <slider
+              :value="fanSpeed"
+              @change="onFanSliderChange"
+              :min="0"
+              :max="3"
+              :step="1"
+              class="slider"
+              activeColor="#3b82f6"
+              backgroundColor="#e5e7eb"
+              block-size="24"
+              show-value
+            />
             <view class="preset-buttons">
-              <view v-for="(preset, index) in fanPresets" :key="index" @click="fanSpeed = preset.value"
-                class="preset-button">
+              <view
+                v-for="(preset, index) in fanPresets"
+                :key="index"
+                @click="fanSpeed = preset.value"
+                class="preset-button"
+              >
                 <text>{{ preset.label }}</text>
               </view>
             </view>
@@ -187,7 +222,12 @@
           </view>
 
           <!-- 动态响应区域 -->
-          <scroll-view class="ai-responses" scroll-y :scroll-into-view="'lastMsg'" scroll-with-animation>
+          <scroll-view
+            class="ai-responses"
+            scroll-y
+            :scroll-into-view="'lastMsg'"
+            scroll-with-animation
+          >
             <text class="ai-text">
               {{ reaContent }}
               <text v-if="isStreaming" class="typing-cursor">|</text>
@@ -204,16 +244,26 @@
           <!-- 输入区域 -->
           <view class="ai-questions">
             <!-- 语音输入按钮 -->
-            <button @click="toggleRecording" 
-            :class="['record-button', isRecording ? 'recording' : '']" 
-            title="语音输入">
-              {{ isRecording? '🛑' : '🎙️' }}
+            <button
+              @click="toggleRecording"
+              :class="['record-button', isRecording ? 'recording' : '']"
+              title="语音输入"
+            >
+              {{ isRecording ? "🛑" : "🎙️" }}
             </button>
 
-            <input type="text" placeholder="请输入你的问题" :disabled="isStreaming" v-model="userMessage"
-              @keyup.enter="handleChat" />
-            <button @click="handleChat" :disabled="isStreaming || !userMessage.trim()"
-              :class="{ loading: isStreaming }">
+            <input
+              type="text"
+              placeholder="请输入你的问题"
+              :disabled="isStreaming"
+              v-model="userMessage"
+              @keyup.enter="handleChat"
+            />
+            <button
+              @click="handleChat"
+              :disabled="isStreaming || !userMessage.trim()"
+              :class="{ loading: isStreaming }"
+            >
               {{ isStreaming ? "传输中..." : "发送" }}
             </button>
           </view>
@@ -236,7 +286,10 @@
                     <text>{{ temperature }}°C</text>
                   </view>
                   <view class="oled-progress">
-                    <view class="oled-progress-fill" :style="{ width: `${(temperature / 50) * 100}%` }"></view>
+                    <view
+                      class="oled-progress-fill"
+                      :style="{ width: `${(temperature / 50) * 100}%` }"
+                    ></view>
                   </view>
 
                   <view class="oled-row">
@@ -244,7 +297,10 @@
                     <text>{{ humidity }}%</text>
                   </view>
                   <view class="oled-progress">
-                    <view class="oled-progress-fill" :style="{ width: `${humidity}%` }"></view>
+                    <view
+                      class="oled-progress-fill"
+                      :style="{ width: `${humidity}%` }"
+                    ></view>
                   </view>
                 </view>
 
@@ -254,7 +310,10 @@
                     <text>{{ gasLevel }}ppm</text>
                   </view>
                   <view class="oled-progress">
-                    <view class="oled-progress-fill" :style="{ width: `${(gasLevel / 1000) * 100}%` }"></view>
+                    <view
+                      class="oled-progress-fill"
+                      :style="{ width: `${(gasLevel / 1000) * 100}%` }"
+                    ></view>
                   </view>
 
                   <view class="oled-row">
@@ -262,7 +321,10 @@
                     <text>{{ fanSpeed }}档</text>
                   </view>
                   <view class="oled-progress">
-                    <view class="oled-progress-fill" :style="{ width: `${(fanSpeed / 5000) * 100}%` }"></view>
+                    <view
+                      class="oled-progress-fill"
+                      :style="{ width: `${(fanSpeed / 5000) * 100}%` }"
+                    ></view>
                   </view>
                 </view>
               </view>
@@ -279,17 +341,15 @@
               <view class="oled-footer">
                 <text :class="alarmActive ? 'oled-alert' : ''">
                   {{
-            alarmActive
-              ? `WARNING: GAS LEVEL ${gasStatus.status.toUpperCase()}`
-              : "SYSTEM OPERATING NORMALLY"
-          }}
+                    alarmActive
+                      ? `WARNING: GAS LEVEL ${gasStatus.status.toUpperCase()}`
+                      : "SYSTEM OPERATING NORMALLY"
+                  }}
                 </text>
               </view>
             </view>
           </view>
         </view>
-
-        
       </view>
     </view>
   </view>
@@ -302,13 +362,14 @@ export default {
       // 语音识别状态
       isRecording: false,
       recognition: null,
-      searchText: '',
-      finalTranscript: '',
-      interimTranscript: '',
-      currentLang: 'zh-CN',
+      searchText: "",
+      finalTranscript: "",
+      interimTranscript: "",
+      currentLang: "zh-CN",
       synth: window.speechSynthesis,
       voices: [],
-      isSpeechSupported: 'webkitSpeechRecognition' in window && window.speechSynthesis,
+      isSpeechSupported:
+        "webkitSpeechRecognition" in window && window.speechSynthesis,
       audioStream: null,
       mediaRecorder: null,
       audioChunks: [],
@@ -321,7 +382,11 @@ export default {
         { label: "我的", value: "display" },
       ],
       activeTab: "sensors",
-
+      // Weather data
+      wp_code: "00",
+      weatherDescription: "晴",
+      weatherIcon: "☀️",
+      wea_temperature: "25",
       // Sensor data
       temperature: 0,
       humidity: 0,
@@ -329,7 +394,7 @@ export default {
       fanSpeed: 0,
       alarmMode: 0,
       alarmActive: false,
-
+      fire_level: 0,
       // Fan presets
       fanPresets: [
         { label: "关闭", value: 0 },
@@ -364,9 +429,9 @@ export default {
       return { status: "Danger", cssClass: "status-danger" };
     },
     fireStatus() {
-      if (this.fireLevel == 0)
-        return { status: "Safe", cssClass: "status-safe" };
-      return { status: "Danger", cssClass: "status-danger" };
+      if (this.fireLevel == 1)
+        return { status: "Danger", cssClass: "status-danger" };
+      return { status: "Safe", cssClass: "status-safe" };
     },
   },
   methods: {
@@ -382,14 +447,16 @@ export default {
     // 开始录音
     async startRecording() {
       if (!this.isSpeechSupported) {
-        this.errorMessage = '当前浏览器不支持语音识别功能';
+        this.errorMessage = "当前浏览器不支持语音识别功能";
         return;
       }
 
       try {
         // 创建语法规则
-        const grammar = '#JSGF V1.0; grammar commands; public <command> = 温度 | 湿度 | 风速 | 降水 | 刷新 | 切换语言 ;';
-        const speechGrammarList = new (window.webkitSpeechGrammarList || window.SpeechGrammarList)();
+        const grammar =
+          "#JSGF V1.0; grammar commands; public <command> = 温度 | 湿度 | 风速 | 降水 | 刷新 | 切换语言 ;";
+        const speechGrammarList = new (window.webkitSpeechGrammarList ||
+          window.SpeechGrammarList)();
         speechGrammarList.addFromString(grammar, 1);
 
         this.recognition = new webkitSpeechRecognition();
@@ -401,8 +468,8 @@ export default {
 
         this.recognition.onstart = () => {
           this.isRecording = true;
-          this.finalTranscript = '';
-          this.interimTranscript = '';
+          this.finalTranscript = "";
+          this.interimTranscript = "";
         };
 
         // 初始化语音合成
@@ -422,7 +489,9 @@ export default {
           this.handleVoiceCommand(command);
           // 添加语音反馈
           const utterance = new SpeechSynthesisUtterance(`已执行 ${command}`);
-          utterance.voice = this.voices.find(v => v.lang === this.currentLang);
+          utterance.voice = this.voices.find(
+            (v) => v.lang === this.currentLang
+          );
           this.synth.speak(utterance);
 
           for (let i = event.resultIndex; i < event.results.length; ++i) {
@@ -444,7 +513,9 @@ export default {
         this.recognition.start();
 
         // 获取麦克风权限
-        this.audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        this.audioStream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
       } catch (error) {
         this.errorMessage = `麦克风访问失败: ${error.message}`;
         this.stopRecording();
@@ -458,7 +529,7 @@ export default {
         this.recognition = null;
       }
       if (this.audioStream) {
-        this.audioStream.getTracks().forEach(track => track.stop());
+        this.audioStream.getTracks().forEach((track) => track.stop());
         this.audioStream = null;
       }
       this.isRecording = false;
@@ -581,8 +652,8 @@ export default {
         this.isStreaming = false;
       }
     },
-    // 测试方法
 
+    // 测试方法
     async fetchSensorData() {
       try {
         const response = await fetch("http://154.21.200.171:8081/dataselect");
@@ -590,15 +661,32 @@ export default {
           throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         const sensorData = data[0] || {};
-        // 假设接口返回数据结构为 { temperature, humidity, gasLevel, fanSpeed, alarmMode }
-        this.temperature = sensorData.temp || 0; // temp → temperature
-        this.humidity = sensorData.hum || 0; // hum → humidity
-        this.gasLevel = sensorData.gas || 0; // gas → gasLevel
+        this.temperature = parseFloat((sensorData.temp || 0).toFixed(1)); // temp → temperature
+        this.humidity = parseFloat((sensorData.hum || 0).toFixed(1));
+        this.gasLevel = parseFloat((sensorData.gas || 0).toFixed(1));
         this.fanSpeed = sensorData.fan_level || 0; // fan_level → fanSpeed
+        this.fireLevel = sensorData.fire_state || 0; // fire_state → fireLevel
         this.alarmActive = sensorData.final_stat === 1; // final_stat → alarmActive
         this.alarmMode = this.alarmActive ? 1 : 0; // 根据 alarmActive 同步 alarmMode
       } catch (error) {
         console.error("传感器数据获取失败:", error);
+      }
+    },
+
+    // 天气方法
+    async fetchWeatherData() {
+      try {
+        const response = await fetch(
+          "https://api.open.geovisearth.com/v2/cn/area/basic?token=db2ed5ebf3c2e774be86874508811472&location=WTX_CH101040800"
+        );
+        if (!response.ok)
+          throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        this.weatherDescription = data.result.wp;
+        this.wp_code = data.result.wp_code;
+        this.wea_temperature = data.result.tem;
+      } catch (error) {
+        console.error("天气数据获取失败:", error);
       }
     },
 
@@ -608,22 +696,23 @@ export default {
         return String.fromCharCode(parseInt(grp, 16));
       });
     },
-    
+
     handleVoiceCommand(command) {
-      console.log('语音识别结果:', command)
-      this.searchText = command
+      console.log("语音识别结果:", command);
+      this.searchText = command;
       this.$nextTick(() => {
-        console.log('当前输入框值:', this.searchText)
-        this.handleSearch()
-      })
+        console.log("当前输入框值:", this.searchText);
+        this.handleSearch();
+      });
     },
   },
   // 在 mounted 中启动定时器
   mounted() {
+    this.fetchWeatherData();
     this.fetchSensorData(); // 立即获取一次数据
     this.timer = setInterval(() => {
       this.fetchSensorData();
-    }, 5000); // 每5秒轮询
+    }, 2000); // 每5秒轮询
   },
 
   // 在组件销毁前清除定时器
@@ -650,19 +739,24 @@ export default {
   &.recording {
     background: #ef4444;
     animation: pulse 1s infinite;
-  } 
+  }
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .ai-questions {
- gap: 8px;
- button {
-  flex-shrink: 0;
- } 
+  gap: 8px;
+  button {
+    flex-shrink: 0;
+  }
 }
 /* 新增样式 */
 .stream-status {
@@ -698,7 +792,6 @@ export default {
 }
 
 @keyframes pulse {
-
   0%,
   100% {
     opacity: 1;
@@ -754,8 +847,7 @@ export default {
   overflow: hidden;
   border-right: 2px solid #3b82f6;
   animation: typing 3s steps(30, end) forwards,
-    /* 调整steps值与动画填充模式 */
-    blink-caret 0.8s step-end infinite;
+    /* 调整steps值与动画填充模式 */ blink-caret 0.8s step-end infinite;
 }
 
 @keyframes typing {
@@ -771,7 +863,6 @@ export default {
 }
 
 @keyframes blink-caret {
-
   from,
   to {
     border-color: transparent;
@@ -1020,12 +1111,13 @@ export default {
     flex-direction: row;
   }
 
-  .sensor-grid>.sensor-card {
+  .sensor-grid > .sensor-card {
     flex: 1;
   }
 }
 
-.sensor-card {
+.sensor-card,
+.weather-card {
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   padding: 15px;
@@ -1034,9 +1126,53 @@ export default {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
+.weather-card {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.weather-card.sunny {
+  background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+}
+
+.weather-card.cloudy {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.weather-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.weather-temp {
+  font-size: 38px;
+  font-weight: bold;
+  color: #1e293b;
+}
+
+.weather-desc {
+  font-size: 14px;
+  color: #475569;
+  margin-top: 4px;
+}
+
 .sensor-card:active {
   transform: translateY(2px);
   box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.05);
+}
+
+.sensor-container {
+  display: flex;
+  flex-direction: row; /* 改为横向排列 */
+  gap: 15px;
+  width: 100%; /* 确保占满父容器 */
+}
+
+.sensor-left,
+.sensor-right {
+  flex: 1;
+  min-width: 0;
 }
 
 .sensor-header {
@@ -1065,8 +1201,8 @@ export default {
 }
 
 .sensor-value {
-  font-size: 28px;
-  font-weight: bold;
+  font-size: 25px;
+  font-weight: 800;
   color: #1e293b;
   margin-bottom: 4px;
 }
@@ -1080,7 +1216,7 @@ export default {
 .fire-modify {
   display: flex;
   position: relative;
-  left:45%;
+  left: 45%;
 }
 
 .sensor-status {
@@ -1336,7 +1472,6 @@ export default {
 }
 
 @keyframes blink {
-
   0%,
   100% {
     opacity: 1;
