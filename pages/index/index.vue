@@ -269,84 +269,62 @@
           </view>
         </view>
 
-        <!-- Display Tab -->
+        <!-- Personal Tab -->
         <view v-if="activeTab === 'display'" class="tab-content">
-          <view class="display-card">
-            <view class="display-header">
-              <text class="icon-text display-icon">📊</text>
-              <text class="display-title">OLED 面板</text>
+          <view class="user-center-card">
+            <!-- 用户头像 -->
+            <view class="avatar-container">
+              <image
+                class="avatar"
+                src="../../static/UserImg.jpg"
+                mode="aspectFill"
+              />
             </view>
-            <view class="oled-display">
-              <text class="oled-header">环境数据监测</text>
 
-              <view class="oled-grid">
-                <view class="oled-column">
-                  <view class="oled-row">
-                    <text>温度:</text>
-                    <text>{{ temperature }}°C</text>
-                  </view>
-                  <view class="oled-progress">
-                    <view
-                      class="oled-progress-fill"
-                      :style="{ width: `${(temperature / 50) * 100}%` }"
-                    ></view>
-                  </view>
+            <!-- 用户信息 -->
+            <view class="user-info">
+              <text class="username">{{ uname }}</text>
+            </view>
 
-                  <view class="oled-row">
-                    <text>湿度:</text>
-                    <text>{{ humidity }}%</text>
-                  </view>
-                  <view class="oled-progress">
-                    <view
-                      class="oled-progress-fill"
-                      :style="{ width: `${humidity}%` }"
-                    ></view>
-                  </view>
-                </view>
-
-                <view class="oled-column">
-                  <view class="oled-row">
-                    <text>气体浓度:</text>
-                    <text>{{ gasLevel }}ppm</text>
-                  </view>
-                  <view class="oled-progress">
-                    <view
-                      class="oled-progress-fill"
-                      :style="{ width: `${(gasLevel / 1000) * 100}%` }"
-                    ></view>
-                  </view>
-
-                  <view class="oled-row">
-                    <text>转速档位:</text>
-                    <text>{{ fanSpeed }}档</text>
-                  </view>
-                  <view class="oled-progress">
-                    <view
-                      class="oled-progress-fill"
-                      :style="{ width: `${(fanSpeed / 5000) * 100}%` }"
-                    ></view>
-                  </view>
-                </view>
+            <!-- 功能列表 -->
+            <view class="function-list">
+              <view class="list-item" @click="showPasswordDialog = true">
+                <text class="item-icon">🔒</text>
+                <text class="item-text">修改密码</text>
+                <text class="item-arrow">›</text>
               </view>
-
-              <view class="oled-status">
-                <view class="oled-row">
-                  <text>状态:</text>
-                  <text :class="alarmActive ? 'oled-alert' : ''">
-                    {{ alarmActive ? "警告" : "正常" }}
-                  </text>
-                </view>
+              <view class="list-item" @click="showAbout">
+                <text class="item-icon">ℹ️</text>
+                <text class="item-text">关于我们</text>
+                <text class="item-arrow">›</text>
               </view>
-
-              <view class="oled-footer">
-                <text :class="alarmActive ? 'oled-alert' : ''">
-                  {{
-                    alarmActive
-                      ? `WARNING: GAS LEVEL ${gasStatus.status.toUpperCase()}`
-                      : "SYSTEM OPERATING NORMALLY"
-                  }}
-                </text>
+              <view class="list-item" @click="handleLogout">
+                <text class="item-icon">🚪</text>
+                <text class="item-text">退出登录</text>
+                <text class="item-arrow">›</text>
               </view>
+            </view>
+          </view>
+        </view>
+        <!-- 修改密码对话框 -->
+        <view v-if="showPasswordDialog" class="password-dialog">
+          <view class="dialog-content">
+            <text class="dialog-title">修改密码</text>
+            <input type="password" placeholder="原密码" v-model="oldPassword" />
+            <input type="password" placeholder="新密码" v-model="newPassword" />
+            <input
+              type="password"
+              placeholder="确认新密码"
+              v-model="confirmPassword"
+            />
+
+            <view class="dialog-buttons">
+              <button @click="handleChangePassword" class="confirm-btn">
+                确认
+              </button>
+              <button @click="showPasswordDialog = false" class="cancel-btn">
+                取消
+              </button>
             </view>
           </view>
         </view>
@@ -395,6 +373,7 @@ export default {
       alarmMode: 0,
       alarmActive: false,
       fire_level: 0,
+
       // Fan presets
       fanPresets: [
         { label: "关闭", value: 0 },
@@ -406,13 +385,20 @@ export default {
       // Alarm sound effect modes
       alarmModes: ["Off", "On"],
 
-      // AI chat history
+      // AI chat
       chatHistory: [],
       replyContent: "", // 存储AI回复内容
       reaContent: "", // 存储AI思考内容
       isStreaming: false, // 流式传输状态
       errorMessage: "", // 错误信息
       userMessage: "", // 用户输入的消息
+
+      // 用户数据
+      showPasswordDialog: false,
+      oldPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+      showAboutDialog: false,
     };
   },
   computed: {
@@ -430,6 +416,9 @@ export default {
       if (this.fireLevel == 1)
         return { status: "Danger", cssClass: "status-danger" };
       return { status: "Safe", cssClass: "status-safe" };
+    },
+    uname() {
+      return uni.getStorageSync("uname") || "未登录"; // 实时获取Storage
     },
   },
   methods: {
@@ -701,6 +690,81 @@ export default {
       this.$nextTick(() => {
         console.log("当前输入框值:", this.searchText);
         this.handleSearch();
+      });
+    },
+
+    async handleChangePassword() {
+      if (this.newPassword !== this.confirmPassword) {
+        uni.showToast({ title: "新密码不一致", icon: "none" });
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          "http://154.21.200.171:8081/user/password",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: uni.getStorageSync("token"), // 修正Token格式
+            },
+            body: JSON.stringify({
+              uname: uni.getStorageSync("uname"), // 根据后端字段名调整
+              oldPassword: this.oldPassword.trim(),
+              newPassword: this.newPassword.trim(),
+            }),
+          }
+        );
+
+        const data = await response.json();
+        console.log("[DEBUG] 修改密码响应:", data);
+
+        if (!response.ok) {
+          throw new Error(data.msg || `请求失败: ${response.status}`);
+        }
+
+        if (data.code === 403) {
+          throw new Error(data.msg || "验证失败：请检查用户名和旧密码");
+        }
+
+        if (data.code !== 203) {
+          throw new Error(data.msg || "未知错误");
+        }
+
+        uni.showToast({ title: "密码修改成功" });
+        // 清除存储并跳转
+        uni.removeStorageSync("token");
+        uni.removeStorageSync("uname");
+        uni.reLaunch({ url: "/pages/login/login" });
+      } catch (error) {
+        console.error("[ERROR] 密码修改失败:", error);
+        uni.showToast({
+          title: error.message.includes("网络")
+            ? "服务器连接异常"
+            : error.message,
+          icon: "none",
+        });
+      }
+    },
+    // 添加关于我们弹窗方法
+    showAbout() {
+      uni.showModal({
+        title: "关于我们",
+        content: "环境监测气象站系统\n版本: 1.0.0\n开发团队: 气象监测组",
+        showCancel: false,
+      });
+    },
+
+    handleLogout() {
+      uni.showModal({
+        title: "提示",
+        content: "确定要退出登录吗？",
+        success: (res) => {
+          if (res.confirm) {
+            // 这里添加实际退出逻辑
+            uni.reLaunch({ url: "/pages/login/login" });
+          }
+        },
       });
     },
   },
@@ -1552,4 +1616,114 @@ export default {
   color: #ef4444;
   font-weight: 600;
 }
+
+.user-center-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.avatar-container {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 2px solid #3b82f6;
+}
+
+.username {
+  font-size: 20px;
+  font-weight: bold;
+  color: #1e293b;
+  margin-bottom: 15px;
+  display: block;
+  text-align: center;
+}
+
+.function-list {
+  margin-top: 20px;
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.item-icon {
+  font-size: 20px;
+  margin-right: 10px;
+}
+
+.item-text {
+  flex: 1;
+  font-size: 16px;
+  color: #333;
+}
+
+.item-arrow {
+  font-size: 24px;
+  color: #999;
+}
+
+/* 密码对话框样式 */
+.password-dialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dialog-content {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 80%;
+}
+
+.dialog-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  display: block;
+}
+
+.dialog-content input {
+  border: 1px solid #ddd;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
+
+.dialog-buttons {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 15px;
+}
+
+.confirm-btn {
+  background: #3b82f6;
+  color: white;
+  margin-left: 10px;
+  padding: 8px 20px;
+}
+
+.cancel-btn {
+  background: #eee;
+  color: #666;
+  padding: 8px 20px;
+}
+
 </style>
