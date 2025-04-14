@@ -141,76 +141,6 @@
           </view>
         </view>
 
-        <!-- Display Tab -->
-        <view v-if="activeTab === 'display'" class="tab-content">
-          <view class="display-card">
-            <view class="display-header">
-              <text class="icon-text display-icon">📊</text>
-              <text class="display-title">OLED 面板</text>
-            </view>
-            <view class="oled-display">
-              <text class="oled-header">环境数据监测</text>
-
-              <view class="oled-grid">
-                <view class="oled-column">
-                  <view class="oled-row">
-                    <text>温度:</text>
-                    <text>{{ temperature }}°C</text>
-                  </view>
-                  <view class="oled-progress">
-                    <view class="oled-progress-fill" :style="{ width: `${(temperature / 50) * 100}%` }"></view>
-                  </view>
-
-                  <view class="oled-row">
-                    <text>湿度:</text>
-                    <text>{{ humidity }}%</text>
-                  </view>
-                  <view class="oled-progress">
-                    <view class="oled-progress-fill" :style="{ width: `${humidity}%` }"></view>
-                  </view>
-                </view>
-
-                <view class="oled-column">
-                  <view class="oled-row">
-                    <text>气体浓度:</text>
-                    <text>{{ gasLevel }}ppm</text>
-                  </view>
-                  <view class="oled-progress">
-                    <view class="oled-progress-fill" :style="{ width: `${(gasLevel / 1000) * 100}%` }"></view>
-                  </view>
-
-                  <view class="oled-row">
-                    <text>转速档位:</text>
-                    <text>{{ fanSpeed }}档</text>
-                  </view>
-                  <view class="oled-progress">
-                    <view class="oled-progress-fill" :style="{ width: `${(fanSpeed / 5000) * 100}%` }"></view>
-                  </view>
-                </view>
-              </view>
-
-              <view class="oled-status">
-                <view class="oled-row">
-                  <text>状态:</text>
-                  <text :class="alarmActive ? 'oled-alert' : ''">
-                    {{ alarmActive ? "警告" : "正常" }}
-                  </text>
-                </view>
-              </view>
-
-              <view class="oled-footer">
-                <text :class="alarmActive ? 'oled-alert' : ''">
-                  {{
-            alarmActive
-              ? `WARNING: GAS LEVEL ${gasStatus.status.toUpperCase()}`
-              : "SYSTEM OPERATING NORMALLY"
-          }}
-                </text>
-              </view>
-            </view>
-          </view>
-        </view>
-
         <!-- AI Tab -->
         <view v-if="activeTab === 'ai'" class="tab-content">
           <!-- 1 版 ui 设计-->
@@ -288,6 +218,78 @@
             </button>
           </view>
         </view>
+
+        <!-- Display Tab -->
+        <view v-if="activeTab === 'display'" class="tab-content">
+          <view class="display-card">
+            <view class="display-header">
+              <text class="icon-text display-icon">📊</text>
+              <text class="display-title">OLED 面板</text>
+            </view>
+            <view class="oled-display">
+              <text class="oled-header">环境数据监测</text>
+
+              <view class="oled-grid">
+                <view class="oled-column">
+                  <view class="oled-row">
+                    <text>温度:</text>
+                    <text>{{ temperature }}°C</text>
+                  </view>
+                  <view class="oled-progress">
+                    <view class="oled-progress-fill" :style="{ width: `${(temperature / 50) * 100}%` }"></view>
+                  </view>
+
+                  <view class="oled-row">
+                    <text>湿度:</text>
+                    <text>{{ humidity }}%</text>
+                  </view>
+                  <view class="oled-progress">
+                    <view class="oled-progress-fill" :style="{ width: `${humidity}%` }"></view>
+                  </view>
+                </view>
+
+                <view class="oled-column">
+                  <view class="oled-row">
+                    <text>气体浓度:</text>
+                    <text>{{ gasLevel }}ppm</text>
+                  </view>
+                  <view class="oled-progress">
+                    <view class="oled-progress-fill" :style="{ width: `${(gasLevel / 1000) * 100}%` }"></view>
+                  </view>
+
+                  <view class="oled-row">
+                    <text>转速档位:</text>
+                    <text>{{ fanSpeed }}档</text>
+                  </view>
+                  <view class="oled-progress">
+                    <view class="oled-progress-fill" :style="{ width: `${(fanSpeed / 5000) * 100}%` }"></view>
+                  </view>
+                </view>
+              </view>
+
+              <view class="oled-status">
+                <view class="oled-row">
+                  <text>状态:</text>
+                  <text :class="alarmActive ? 'oled-alert' : ''">
+                    {{ alarmActive ? "警告" : "正常" }}
+                  </text>
+                </view>
+              </view>
+
+              <view class="oled-footer">
+                <text :class="alarmActive ? 'oled-alert' : ''">
+                  {{
+            alarmActive
+              ? `WARNING: GAS LEVEL ${gasStatus.status.toUpperCase()}`
+              : "SYSTEM OPERATING NORMALLY"
+          }}
+                </text>
+              </view>
+            </view>
+          </view>
+        </view>
+
+        
       </view>
     </view>
   </view>
@@ -314,9 +316,9 @@ export default {
       // Tab configuration
       tabs: [
         { label: "主页", value: "sensors" },
-        { label: "控制台", value: "controls" },
-        { label: "OLED", value: "display" },
+        { label: "设备管理", value: "controls" },
         { label: "气象AI", value: "ai" },
+        { label: "我的", value: "display" },
       ],
       activeTab: "sensors",
 
@@ -606,6 +608,7 @@ export default {
         return String.fromCharCode(parseInt(grp, 16));
       });
     },
+    
     handleVoiceCommand(command) {
       console.log('语音识别结果:', command)
       this.searchText = command
