@@ -1214,7 +1214,7 @@ export default {
 .fire-modify {
   display: flex;
   position: relative;
-  left: 45%;
+  left: 53%;
 }
 
 .sensor-status {
