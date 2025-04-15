@@ -157,7 +157,7 @@ export default {
       showLoginPassword: false,
       showRegisterPassword: false,
       showConfirmPassword: false,
-      baseUrl:"http://154.21.200.171:8081/",
+      baseUrl:"/api",
       loginForm: {
         uname: "",
         password: "",
@@ -195,7 +195,7 @@ export default {
         uni.showToast({ title: "请输入密码", icon: "none" });
         return;
       }
-      let Url = this.baseUrl + "user/login" + "?uname=" + this.loginForm.uname + "&password=" + this.loginForm.password;
+      let Url = this.baseUrl + "/user/login" + "?uname=" + this.loginForm.uname + "&password=" + this.loginForm.password;
       const response = await fetch(
           Url,
           {
@@ -237,7 +237,7 @@ export default {
         return;
       }
 
-      let Url = this.baseUrl + "user/register"
+      let Url = this.baseUrl + "/user/register"
       const response = await fetch(
           Url,
           {
