@@ -351,6 +351,7 @@ export default {
       audioStream: null,
       mediaRecorder: null,
       audioChunks: [],
+
       // Tab configuration
       tabs: [
         { label: "主页", value: "sensors" },
@@ -359,11 +360,13 @@ export default {
         { label: "我的", value: "display" },
       ],
       activeTab: "sensors",
+
       // Weather data
       wp_code: "00",
       weatherDescription: "晴",
       weatherIcon: "☀️",
       wea_temperature: "25",
+
       // Sensor data
       temperature: 0,
       humidity: 0,
@@ -391,6 +394,7 @@ export default {
       isStreaming: false, // 流式传输状态
       errorMessage: "", // 错误信息
       userMessage: "", // 用户输入的消息
+      chatApi: "/chatapi", // 对话API地址
 
       // 用户数据
       showPasswordDialog: false,
@@ -525,7 +529,6 @@ export default {
     // Fix for tab switching
     switchTab(tabValue) {
       this.activeTab = tabValue;
-      console.log("Switched to tab:", tabValue);
     },
     onFanSliderChange(e) {
       this.fanSpeed = e.detail.value;
@@ -552,6 +555,7 @@ export default {
     // 修改后的handleChat方法
     async handleChat() {
       try {
+        let Url = this.chatApi + "/api/application/chat_message/65ebd480-19bc-11f0-8561-0242ac110002";
         if (!this.userMessage.trim()) {
           this.errorMessage = "请输入有效问题";
           return;
@@ -561,7 +565,7 @@ export default {
         this.reaContent = "";
 
         const response = await fetch(
-          "http://154.39.79.242:8080/api/application/chat_message/65ebd480-19bc-11f0-8561-0242ac110002",
+          Url,
           {
             method: "POST",
             headers: {
@@ -691,7 +695,6 @@ export default {
       this.searchText = command;
       this.$nextTick(() => {
         console.log("当前输入框值:", this.searchText);
-        this.handleSearch();
       });
     },
 
