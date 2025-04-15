@@ -24,15 +24,10 @@
       <view class="panel-content">
         <view class="tabs">
           <view class="tab-buttons">
-            <view
-              v-for="(tab, index) in tabs"
-              :key="index"
-              @click="switchTab(tab.value)"
-              :class="[
-                'tab-button',
-                activeTab === tab.value ? 'tab-active' : '',
-              ]"
-            >
+            <view v-for="(tab, index) in tabs" :key="index" @click="switchTab(tab.value)" :class="[
+            'tab-button',
+            activeTab === tab.value ? 'tab-active' : '',
+          ]">
               <text class="tab-text">{{ tab.label }}</text>
             </view>
           </view>
@@ -43,10 +38,7 @@
           <!-- Temperature & Humidity -->
           <view class="sensor-grid">
             <!-- Weather -->
-            <view
-              class="weather-card"
-              :class="wp_code === '00' ? 'sunny' : 'cloudy'"
-            >
+            <view class="weather-card" :class="wp_code === '00' ? 'sunny' : 'cloudy'">
               <view class="sensor-header">
                 <text class="icon-text">{{ weatherIcon }}</text>
                 <text class="sensor-title">户外天气</text>
@@ -80,10 +72,7 @@
               <view class="sensor-header">
                 <text class="icon-text temp-icon">🔥</text>
                 <text class="sensor-title">火灾预警</text>
-                <text
-                  :class="`fire-modify status-text ${fireStatus.cssClass}`"
-                  >{{ fireStatus.status }}</text
-                >
+                <text :class="`fire-modify status-text ${fireStatus.cssClass}`">{{ fireStatus.status }}</text>
               </view>
             </view>
           </view>
@@ -97,21 +86,17 @@
             <view class="sensor-status">
               <text class="sensor-value">{{ gasLevel }} ppm</text>
               <text :class="`status-text ${gasStatus.cssClass}`">{{
-                gasStatus.status
-              }}</text>
+            gasStatus.status
+          }}</text>
             </view>
             <text class="sensor-accuracy">范围: 0-1000ppm</text>
             <view class="progress-bar">
-              <view
-                :class="`progress-fill ${
-                  gasLevel < 400
-                    ? 'gas-safe'
-                    : gasLevel < 700
-                    ? 'gas-warning'
-                    : 'gas-danger'
-                }`"
-                :style="{ width: `${(gasLevel / 1000) * 100}%` }"
-              ></view>
+              <view :class="`progress-fill ${gasLevel < 400
+              ? 'gas-safe'
+              : gasLevel < 700
+                ? 'gas-warning'
+                : 'gas-danger'
+            }`" :style="{ width: `${(gasLevel / 1000) * 100}%` }"></view>
             </view>
           </view>
         </view>
@@ -133,10 +118,7 @@
             <text class="control-range">范围: 0-3 档</text>
 
             <view class="control-header">
-              <text
-                class="icon-text"
-                :class="alarmMode > 0 ? 'alarm-on-icon' : 'alarm-off-icon'"
-              >
+              <text class="icon-text" :class="alarmMode > 0 ? 'alarm-on-icon' : 'alarm-off-icon'">
                 {{ alarmMode > 0 ? "🔊" : "🔇" }}
               </text>
               <text class="control-title">蜂鸣器警报</text>
@@ -148,25 +130,11 @@
               </text>
             </view>
 
-            <slider
-              :value="fanSpeed"
-              @change="onFanSliderChange"
-              :min="0"
-              :max="3"
-              :step="1"
-              class="slider"
-              activeColor="#3b82f6"
-              backgroundColor="#e5e7eb"
-              block-size="24"
-              show-value
-            />
+            <slider :value="fanSpeed" @change="onFanSliderChange" :min="0" :max="3" :step="1" class="slider"
+              activeColor="#3b82f6" backgroundColor="#e5e7eb" block-size="24" show-value />
             <view class="preset-buttons">
-              <view
-                v-for="(preset, index) in fanPresets"
-                :key="index"
-                @click="fanSpeed = preset.value"
-                class="preset-button"
-              >
+              <view v-for="(preset, index) in fanPresets" :key="index" @click="fanSpeed = preset.value"
+                class="preset-button">
                 <text>{{ preset.label }}</text>
               </view>
             </view>
@@ -222,12 +190,7 @@
           </view>
 
           <!-- 动态响应区域 -->
-          <scroll-view
-            class="ai-responses"
-            scroll-y
-            :scroll-into-view="'lastMsg'"
-            scroll-with-animation
-          >
+          <scroll-view class="ai-responses" scroll-y :scroll-into-view="'lastMsg'" scroll-with-animation>
             <text class="ai-text">
               {{ reaContent }}
               <text v-if="isStreaming" class="typing-cursor">|</text>
@@ -244,26 +207,14 @@
           <!-- 输入区域 -->
           <view class="ai-questions">
             <!-- 语音输入按钮 -->
-            <button
-              @click="toggleRecording"
-              :class="['record-button', isRecording ? 'recording' : '']"
-              title="语音输入"
-            >
+            <button @click="toggleRecording" :class="['record-button', isRecording ? 'recording' : '']" title="语音输入">
               {{ isRecording ? "🛑" : "🎙️" }}
             </button>
 
-            <input
-              type="text"
-              placeholder="请输入你的问题"
-              :disabled="isStreaming"
-              v-model="userMessage"
-              @keyup.enter="handleChat"
-            />
-            <button
-              @click="handleChat"
-              :disabled="isStreaming || !userMessage.trim()"
-              :class="{ loading: isStreaming }"
-            >
+            <input type="text" placeholder="请输入你的问题" :disabled="isStreaming" v-model="userMessage"
+              @keyup.enter="handleChat" />
+            <button @click="handleChat" :disabled="isStreaming || !userMessage.trim()"
+              :class="{ loading: isStreaming }">
               {{ isStreaming ? "传输中..." : "发送" }}
             </button>
           </view>
@@ -274,11 +225,7 @@
           <view class="user-center-card">
             <!-- 用户头像 -->
             <view class="avatar-container">
-              <image
-                class="avatar"
-                src="../../static/UserImg.jpg"
-                mode="aspectFill"
-              />
+              <image class="avatar" src="../../static/UserImg.jpg" mode="aspectFill" />
             </view>
 
             <!-- 用户信息 -->
@@ -312,11 +259,7 @@
             <text class="dialog-title">修改密码</text>
             <input type="password" placeholder="原密码" v-model="oldPassword" />
             <input type="password" placeholder="新密码" v-model="newPassword" />
-            <input
-              type="password"
-              placeholder="确认新密码"
-              v-model="confirmPassword"
-            />
+            <input type="password" placeholder="确认新密码" v-model="confirmPassword" />
 
             <view class="dialog-buttons">
               <button @click="handleChangePassword" class="confirm-btn">
@@ -418,7 +361,7 @@ export default {
       return { status: "Safe", cssClass: "status-safe" };
     },
     uname() {
-      return uni.getStorageSync("uname") || "未登录"; // 实时获取Storage
+      return uni.getStorageSync('uname') || '未登录'; // 实时获取Storage
     },
   },
   methods: {
@@ -643,7 +586,11 @@ export default {
     // 测试方法
     async fetchSensorData() {
       try {
-        const response = await fetch("http://154.21.200.171:8081/dataselect");
+        const response = await fetch("http://154.21.200.171:8081/dataselect",{
+          headers: {
+            Authorization: uni.getStorageSync("token"),
+          }
+        });
         if (!response.ok)
           throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
@@ -706,10 +653,10 @@ export default {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: uni.getStorageSync("token"), // 修正Token格式
+              Authorization: uni.getStorageSync("token"),
             },
             body: JSON.stringify({
-              uname: uni.getStorageSync("uname"), // 根据后端字段名调整
+              uname: uni.getStorageSync("uname"),
               oldPassword: this.oldPassword.trim(),
               newPassword: this.newPassword.trim(),
             }),
@@ -798,6 +745,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+
   &.recording {
     background: #ef4444;
     animation: pulse 1s infinite;
@@ -805,10 +753,12 @@ export default {
 }
 
 @keyframes pulse {
+
   0%,
   100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.5;
   }
@@ -816,10 +766,12 @@ export default {
 
 .ai-questions {
   gap: 8px;
+
   button {
     flex-shrink: 0;
   }
 }
+
 /* 新增样式 */
 .stream-status {
   font-size: 12px;
@@ -854,6 +806,7 @@ export default {
 }
 
 @keyframes pulse {
+
   0%,
   100% {
     opacity: 1;
@@ -909,7 +862,8 @@ export default {
   overflow: hidden;
   border-right: 2px solid #3b82f6;
   animation: typing 3s steps(30, end) forwards,
-    /* 调整steps值与动画填充模式 */ blink-caret 0.8s step-end infinite;
+    /* 调整steps值与动画填充模式 */
+    blink-caret 0.8s step-end infinite;
 }
 
 @keyframes typing {
@@ -925,6 +879,7 @@ export default {
 }
 
 @keyframes blink-caret {
+
   from,
   to {
     border-color: transparent;
@@ -1173,7 +1128,7 @@ export default {
     flex-direction: row;
   }
 
-  .sensor-grid > .sensor-card {
+  .sensor-grid>.sensor-card {
     flex: 1;
   }
 }
@@ -1226,9 +1181,11 @@ export default {
 
 .sensor-container {
   display: flex;
-  flex-direction: row; /* 改为横向排列 */
+  flex-direction: row;
+  /* 改为横向排列 */
   gap: 15px;
-  width: 100%; /* 确保占满父容器 */
+  width: 100%;
+  /* 确保占满父容器 */
 }
 
 .sensor-left,
@@ -1253,7 +1210,8 @@ export default {
   display: flex;
   align-items: center;
   gap: 4px;
-  margin-left: auto; /* 确保状态靠右对齐 */
+  margin-left: auto;
+  /* 确保状态靠右对齐 */
 }
 
 .sensor-title {
@@ -1534,6 +1492,7 @@ export default {
 }
 
 @keyframes blink {
+
   0%,
   100% {
     opacity: 1;
@@ -1725,5 +1684,4 @@ export default {
   color: #666;
   padding: 8px 20px;
 }
-
 </style>

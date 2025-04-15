@@ -205,6 +205,8 @@ export default {
         const data = await response.json(); // 解析响应数据
         console.log(data);
         if (data.code == 203) {
+          uni.setStorageSync('uname', data.data.uname);
+          uni.setStorageSync('token', data.token);
           uni.navigateTo({ url: "/pages/index/index" }); // 跳转到首页
         }
         else {
