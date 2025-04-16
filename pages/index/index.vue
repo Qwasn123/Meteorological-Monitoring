@@ -425,7 +425,6 @@ export default {
     },
   },
   methods: {
-    // 录音控制
     async toggleRecording() {
       if (this.isRecording) {
         await this.stopRecording();
@@ -434,27 +433,27 @@ export default {
       }
     },
 
-    // 开始录音
     async startRecording() {
-      if (!this.isSpeechSupported) {
+      if (
+        !("SpeechRecognition" in window || "webkitSpeechRecognition" in window)
+      ) {
         this.errorMessage = "当前浏览器不支持语音识别功能";
         return;
       }
 
       try {
-        // 创建语法规则
-        const grammar =
-          "#JSGF V1.0; grammar commands; public <command> = 温度 | 湿度 | 风速 | 降水 | 刷新 | 切换语言 ;";
-        const speechGrammarList = new (window.webkitSpeechGrammarList ||
-          window.SpeechGrammarList)();
-        speechGrammarList.addFromString(grammar, 1);
+        // 获取麦克风权限
+        this.audioStream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
 
-        this.recognition = new webkitSpeechRecognition();
-        this.recognition.grammars = speechGrammarList;
-        this.recognition.continuous = true;
-        this.recognition.interimResults = true;
+        // 初始化语音识别
+        const SpeechRecognition =
+          window.SpeechRecognition || window.webkitSpeechRecognition;
+        this.recognition = new SpeechRecognition();
+        this.recognition.continuous = false;
         this.recognition.lang = this.currentLang;
-        this.recognition.maxAlternatives = 3;
+        this.recognition.interimResults = false;
 
         this.recognition.onstart = () => {
           this.isRecording = true;
@@ -462,37 +461,21 @@ export default {
           this.interimTranscript = "";
         };
 
-        // 初始化语音合成
-        this.synth.onvoiceschanged = () => {
-          this.voices = this.synth.getVoices();
-        };
-
-        // 语言切换方法
-        this.switchLanguage = (lang) => {
-          this.currentLang = lang;
-          this.recognition.lang = lang;
-          this.$forceUpdate();
-        };
-
         this.recognition.onresult = (event) => {
-          const command = event.results[0][0].transcript;
-          this.handleVoiceCommand(command);
-          // 添加语音反馈
-          const utterance = new SpeechSynthesisUtterance(`已执行 ${command}`);
-          utterance.voice = this.voices.find(
-            (v) => v.lang === this.currentLang
-          );
-          this.synth.speak(utterance);
+          const result = event.results[0];
+          const transcript = result[0].transcript.trim();
+          this.handleVoiceCommand(transcript);
 
-          for (let i = event.resultIndex; i < event.results.length; ++i) {
-            if (event.results[i].isFinal) {
-              this.finalTranscript += event.results[i][0].transcript;
-              this.userMessage = this.finalTranscript;
-            } else {
-              this.interimTranscript = event.results[i][0].transcript;
-              this.userMessage = this.interimTranscript;
-            }
+          // 语音反馈
+          if (this.defaultVoice) {
+            const utterance = new SpeechSynthesisUtterance(
+              `已执行 ${transcript}`
+            );
+            utterance.voice = this.defaultVoice;
+            this.synth.speak(utterance);
           }
+
+          this.userMessage = transcript;
         };
 
         this.recognition.onerror = (event) => {
@@ -501,18 +484,12 @@ export default {
         };
 
         this.recognition.start();
-
-        // 获取麦克风权限
-        this.audioStream = await navigator.mediaDevices.getUserMedia({
-          audio: true,
-        });
       } catch (error) {
-        this.errorMessage = `麦克风访问失败: ${error.message}`;
+        this.errorMessage = `错误: ${error.message}`;
         this.stopRecording();
       }
     },
 
-    // 停止录音
     async stopRecording() {
       if (this.recognition) {
         this.recognition.stop();
@@ -523,10 +500,8 @@ export default {
         this.audioStream = null;
       }
       this.isRecording = false;
-      this.userMessage = this.finalTranscript;
     },
 
-    
     // Fix for tab switching
     switchTab(tabValue) {
       this.activeTab = tabValue;
@@ -543,7 +518,7 @@ export default {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "token": token,
+            token: token,
           },
           body: JSON.stringify({
             speed: this.fanSpeed,
@@ -558,7 +533,9 @@ export default {
     // 修改后的handleChat方法
     async handleChat() {
       try {
-        let Url = this.chatApi + "/api/application/chat_message/65ebd480-19bc-11f0-8561-0242ac110002";
+        let Url =
+          this.chatApi +
+          "/api/application/chat_message/65ebd480-19bc-11f0-8561-0242ac110002";
         if (!this.userMessage.trim()) {
           this.errorMessage = "请输入有效问题";
           return;
@@ -567,21 +544,18 @@ export default {
         this.replyContent = "";
         this.reaContent = "";
 
-        const response = await fetch(
-          Url,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: "application-4eda6827510e8707027d68489902b172",
-              Accept: "application/json",
-            },
-            body: JSON.stringify({
-              message: this.userMessage, // 发送用户输入的消息
-              stream: true,
-            }),
-          }
-        );
+        const response = await fetch(Url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "application-4eda6827510e8707027d68489902b172",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            message: this.userMessage, // 发送用户输入的消息
+            stream: true,
+          }),
+        });
 
         if (!response.ok)
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -651,7 +625,7 @@ export default {
       try {
         const response = await fetch(Url, {
           headers: {
-            "token": token,
+            token: token,
           },
         });
         if (!response.ok)
@@ -715,7 +689,7 @@ export default {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "token": token,
+            token: token,
           },
           body: JSON.stringify({
             uname: uni.getStorageSync("uname"),
