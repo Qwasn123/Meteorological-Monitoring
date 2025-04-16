@@ -526,6 +526,7 @@ export default {
       this.userMessage = this.finalTranscript;
     },
 
+    
     // Fix for tab switching
     switchTab(tabValue) {
       this.activeTab = tabValue;
@@ -537,10 +538,12 @@ export default {
       this.alarmMode = this.fanSpeed === 0 ? 0 : 1;
       try {
         let Url = this.baseUrl + "/api/devices/control-devices";
+        let token = uni.getStorageSync("token");
         const response = await fetch(Url, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "token": token,
           },
           body: JSON.stringify({
             speed: this.fanSpeed,
@@ -644,10 +647,11 @@ export default {
     // 数据获取
     async fetchSensorData() {
       let Url = this.baseUrl + "/dataselect";
+      let token = uni.getStorageSync("token");
       try {
         const response = await fetch(Url, {
           headers: {
-            Authorization: uni.getStorageSync("token"),
+            "token": token,
           },
         });
         if (!response.ok)
@@ -706,11 +710,12 @@ export default {
 
       try {
         let Url = this.baseUrl + "/user/password";
+        let token = uni.getStorageSync("token");
         const response = await fetch(Url, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: uni.getStorageSync("token"),
+            "token": token,
           },
           body: JSON.stringify({
             uname: uni.getStorageSync("uname"),

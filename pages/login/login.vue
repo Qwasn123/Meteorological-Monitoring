@@ -206,7 +206,7 @@ export default {
         console.log(data);
         if (data.code == 203) {
           uni.setStorageSync('uname', data.data.uname);
-          uni.setStorageSync('token', data.token);
+          uni.setStorageSync('token', data.msg);
           uni.navigateTo({ url: "/pages/index/index" }); // 跳转到首页
         }
         else {
